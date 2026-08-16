@@ -1,0 +1,2655 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>مدیریت آزمون‌ها</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --green: #16a34a;
+            --red: #dc2626;
+            --orange: #ea580c;
+            --shadow: 0 8px 30px rgba(15, 23, 42, 0.07);
+        }
+
+        body {
+            font-family: Tahoma, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        button,
+        input {
+            font-family: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .container {
+            width: min(1000px, calc(100% - 30px));
+            margin: auto;
+        }
+
+        /* Header */
+
+        header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .logo h1 {
+            font-size: 18px;
+        }
+
+        .logo span {
+            color: var(--muted);
+            font-size: 12px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* Buttons */
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 11px 17px;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #eef0ff;
+            color: var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #e0e3ff;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: var(--red);
+        }
+
+        .btn-success {
+            background: #dcfce7;
+            color: var(--green);
+        }
+
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Main */
+
+        main {
+            padding: 35px 0 60px;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .page-title h2 {
+            font-size: 22px;
+        }
+
+        .page-title p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        /* Exams */
+
+        .exams {
+            display: grid;
+            gap: 15px;
+        }
+
+        .exam-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .exam-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .exam-title {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .exam-date {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .badge-pending {
+            background: #fff7ed;
+            color: var(--orange);
+        }
+
+        .badge-done {
+            background: #dcfce7;
+            color: var(--green);
+        }
+
+        .exam-info {
+            display: flex;
+            gap: 25px;
+            margin: 18px 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .exam-info strong {
+            color: var(--text);
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 70px 20px;
+            background: white;
+            border: 1px dashed var(--border);
+            border-radius: 16px;
+            color: var(--muted);
+        }
+
+        .empty-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        /* Modal */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-box {
+            width: min(500px, 100%);
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+        }
+
+        .close {
+            border: none;
+            background: #f3f4f6;
+            width: 35px;
+            height: 35px;
+            border-radius: 9px;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            height: 45px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0 13px;
+            outline: none;
+            font-size: 14px;
+            direction: rtl;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        /* Exam page */
+
+        .exam-page {
+            display: none;
+        }
+
+        .exam-page.active {
+            display: block;
+        }
+
+        .exam-header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 18px 0;
+        }
+
+        .exam-header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .exam-header-title {
+            font-weight: bold;
+        }
+
+        .exam-header-counter {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .question-container {
+            max-width: 750px;
+            margin: 40px auto;
+        }
+
+        .progress-wrapper {
+            margin-bottom: 25px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .progress {
+            height: 7px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.25s;
+        }
+
+        .question-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .question-number {
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: bold;
+            line-height: 2;
+            margin-bottom: 25px;
+        }
+
+        .options {
+            display: grid;
+            gap: 11px;
+        }
+
+        .option {
+            width: 100%;
+            min-height: 58px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            gap: 12px;
+            text-align: right;
+            transition: 0.15s;
+        }
+
+        .option:hover {
+            border-color: #a5b4fc;
+            background: #fafaff;
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #eef0ff;
+        }
+
+        .option-number {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: 9px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .option.selected .option-number {
+            background: var(--primary);
+            color: white;
+        }
+
+        .option-text {
+            font-size: 13px;
+        }
+
+        .question-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 18px;
+            gap: 10px;
+        }
+
+        .question-nav-center {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* Result */
+
+        .result-card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .result-subtitle {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .result-percent {
+            font-size: 45px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 25px 0;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .result-item {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 10px;
+        }
+
+        .result-number {
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .correct {
+            color: var(--green);
+        }
+
+        .wrong {
+            color: var(--red);
+        }
+
+        .blank {
+            color: var(--orange);
+        }
+
+        .back-home {
+            margin-top: 25px;
+        }
+
+        /* Detailed result */
+        .result-actions { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:20px; }
+        .result-filters { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:24px 0 15px; }
+        .filter-btn { border:1px solid var(--border); background:#fff; color:var(--muted); border-radius:999px; padding:8px 13px; font-size:12px; }
+        .filter-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+        .question-results { display:grid; gap:10px; margin-top:12px; text-align:right; }
+        .question-result { border:1px solid var(--border); border-radius:13px; padding:14px; background:#fff; }
+        .question-result-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+        .question-result-number { font-weight:bold; font-size:13px; }
+        .question-status { font-size:11px; padding:5px 8px; border-radius:999px; }
+        .question-status.correct { background:#dcfce7; }
+        .question-status.wrong { background:#fee2e2; }
+        .question-status.blank { background:#ffedd5; }
+        .answer-row { display:flex; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+        .answer-chip { background:#f8fafc; border:1px solid var(--border); border-radius:9px; padding:7px 9px; }
+        .notes-preview { margin-top:14px; padding:12px; border-radius:12px; background:#fafaff; border:1px solid #e0e3ff; text-align:right; font-size:12px; line-height:1.9; white-space:pre-wrap; overflow-wrap:anywhere; }
+        .notes-label { color:var(--primary); font-weight:bold; margin-bottom:4px; }
+        .form-group textarea { width:100%; min-height:180px; border:1px solid var(--border); border-radius:12px; padding:13px; outline:none; font-family:inherit; font-size:14px; line-height:1.9; resize:vertical; direction:rtl; }
+        .form-group textarea:focus { border-color:var(--primary); }
+
+        /* Responsive */
+
+        @media (max-width: 600px) {
+
+            .container {
+                width: min(100% - 20px, 1000px);
+            }
+
+            main {
+                padding-top: 25px;
+            }
+
+            .page-title h2 {
+                font-size: 19px;
+            }
+
+            .page-title {
+                align-items: flex-start;
+            }
+
+            .page-title .btn {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .exam-top {
+                flex-direction: column;
+            }
+
+            .exam-info {
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .question-container {
+                margin: 25px auto;
+            }
+
+            .question-card {
+                padding: 20px;
+            }
+
+            .question-text {
+                font-size: 15px;
+            }
+
+            .option {
+                min-height: 54px;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* =====================================================
+   THEME SYSTEM
+===================================================== */
+
+/* تم روشن - Clean */
+:root {
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+
+    --green: #16a34a;
+    --red: #dc2626;
+    --orange: #ea580c;
+
+    --input-bg: #ffffff;
+    --option-bg: #ffffff;
+    --option-hover: #fafaff;
+
+    --secondary-bg: #eef0ff;
+    --secondary-text: #4f46e5;
+
+    --header-bg: #ffffff;
+
+    --shadow: 0 8px 30px rgba(15, 23, 42, 0.07);
+}
+
+
+/* =====================================================
+   تم دارک - Midnight
+===================================================== */
+
+body[data-theme="dark"] {
+
+    --bg: #0f172a;
+    --card: #182235;
+
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #293548;
+
+    --primary: #818cf8;
+    --primary-dark: #6366f1;
+
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fb923c;
+
+    --input-bg: #111827;
+    --option-bg: #182235;
+    --option-hover: #202b40;
+
+    --secondary-bg: #242b4a;
+    --secondary-text: #a5b4fc;
+
+    --header-bg: #111827;
+
+    --shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =====================================================
+   تم Focus - سبز مطالعه
+===================================================== */
+
+body[data-theme="focus"] {
+
+    --bg: #f1f5f1;
+    --card: #ffffff;
+
+    --text: #1f3328;
+    --muted: #6b7c72;
+    --border: #dce7df;
+
+    --primary: #16805c;
+    --primary-dark: #106b4c;
+
+    --green: #16805c;
+    --red: #dc4c4c;
+    --orange: #d97706;
+
+    --input-bg: #ffffff;
+    --option-bg: #ffffff;
+    --option-hover: #f0f8f3;
+
+    --secondary-bg: #e4f2eb;
+    --secondary-text: #16805c;
+
+    --header-bg: #ffffff;
+
+    --shadow: 0 8px 30px rgba(25, 70, 50, 0.08);
+}
+
+
+/* =====================================================
+   هماهنگ کردن اجزای برنامه با تم
+===================================================== */
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
+}
+
+header,
+.exam-header {
+    background: var(--header-bg);
+    transition: background-color 0.25s ease;
+}
+
+.exam-card,
+.empty,
+.modal-box,
+.question-card,
+.result-card {
+    background: var(--card);
+    border-color: var(--border);
+    box-shadow: var(--shadow);
+
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.form-group input {
+    background: var(--input-bg);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.form-group input::placeholder {
+    color: var(--muted);
+}
+
+.option {
+    background: var(--option-bg);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.option:hover {
+    background: var(--option-hover);
+}
+
+.option.selected {
+    background: var(--secondary-bg);
+    border-color: var(--primary);
+}
+
+.option-number {
+    background: var(--secondary-bg);
+    color: var(--secondary-text);
+}
+
+.option.selected .option-number {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--secondary-bg);
+    color: var(--secondary-text);
+}
+
+.progress {
+    background: var(--border);
+}
+
+.close {
+    background: var(--secondary-bg);
+    color: var(--text);
+}
+
+.result-item {
+    border-color: var(--border);
+}
+
+.modal {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+
+/* =====================================================
+   انیمیشن نرم هنگام تغییر تم
+===================================================== */
+
+* {
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+/* =====================================================
+   Theme Selector
+===================================================== */
+
+.theme-selector {
+    position: relative;
+}
+
+.theme-button {
+    width: 43px;
+    height: 43px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: var(--card);
+    color: var(--text);
+
+    font-size: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.theme-button:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+
+.theme-menu {
+    position: absolute;
+
+    top: calc(100% + 8px);
+    right: 0;
+
+    width: 150px;
+    max-width: none;
+
+    padding: 6px;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    box-shadow: var(--shadow);
+
+    display: none;
+
+    z-index: 1000;
+}
+
+.theme-menu.active {
+    display: block;
+}
+
+
+.theme-menu button {
+    width: 100%;
+
+    border: none;
+    background: transparent;
+
+    color: var(--text);
+
+    padding: 10px 11px;
+
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    text-align: right;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.theme-menu button:hover {
+    background: var(--secondary-bg);
+}
+
+.theme-menu button span {
+    flex: 1;
+}
+
+/* =====================================================
+   MOBILE RESPONSIVE FIX
+===================================================== */
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+
+
+/* هدر */
+
+.header-inner {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    padding-left: 20px;
+    padding-right: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+
+/* بخش دکمه‌های هدر */
+
+.header-inner > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+
+/* محتوای اصلی */
+
+.container,
+main {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* کارت آزمون */
+
+.exam-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* موبایل */
+
+@media (max-width: 600px) {
+
+    .header-inner {
+        padding: 14px 12px;
+
+        gap: 8px;
+    }
+
+
+    /* عنوان هدر */
+
+    .logo {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .logo h1 {
+        font-size: 18px;
+    }
+
+    .logo span {
+        font-size: 11px;
+    }
+
+
+    /* آیکون */
+
+    .logo-icon {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+    }
+
+
+    /* دکمه آزمون جدید */
+
+    .btn-primary {
+        white-space: nowrap;
+        padding: 11px 13px;
+        font-size: 12px;
+    }
+
+
+    /* دکمه تم */
+
+    .theme-button {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+
+    /* منوی تم */
+
+    .theme-menu {
+        right: 0;
+        width: 145px;
+    }
+
+
+    /* محتوای صفحه */
+
+    .container,
+    main {
+        width: 100%;
+        padding-left: 12px;
+        padding-right: 12px;
+
+        box-sizing: border-box;
+    }
+
+
+    /* کارت */
+
+    .exam-card {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+
+        box-sizing: border-box;
+    }
+
+}
+
+/* اصلاح منوی تم در موبایل */
+@media (max-width: 600px) {
+
+    .theme-selector {
+        position: relative;
+    }
+
+    .theme-menu {
+        right: auto !important;
+        left: 0 !important;
+        width: 150px !important;
+        min-width: 150px !important;
+        max-width: 150px !important;
+        box-sizing: border-box;
+    }
+
+    .theme-menu button {
+        width: 100%;
+        box-sizing: border-box;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+
+        padding: 11px 12px;
+
+        white-space: nowrap;
+    }
+
+}
+
+.logo-icon {
+    overflow: hidden;
+}
+
+/* اصلاح اندازه و وسط‌چین شدن عکس لوگو */
+.logo-icon img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    margin: 0;
+    padding: 0;
+    border-radius: inherit;
+}
+
+@media (max-width: 600px) {
+    .logo-icon {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        min-height: 42px;
+        padding: 0;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+    }
+}
+    </style>
+</head>
+
+<body>
+
+<!-- =========================
+     صفحه اصلی
+========================= -->
+
+<div id="homePage">
+
+    <header>
+        <div class="container header-inner">
+
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="icon.jpg">
+                </div>
+
+                <div>
+                    <h1>مدیریت آزمون‌ها</h1>
+                    <span>ثبت، انجام و سنجش آزمون</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="openNewExamModal()">
+                + آزمون جدید
+            </button>
+            
+            <div class="theme-selector">
+
+    <button
+        class="theme-button"
+        onclick="toggleThemeMenu()"
+        title="تغییر تم"
+    >
+        🎨
+    </button>
+
+    <div id="themeMenu" class="theme-menu">
+
+        <button onclick="setTheme('light')">
+            ☀️
+            <span>روشن</span>
+        </button>
+
+        <button onclick="setTheme('dark')">
+            🌙
+            <span>دارک</span>
+        </button>
+
+        <button onclick="setTheme('focus')">
+            🌿
+            <span>Focus</span>
+        </button>
+
+    </div>
+
+</div>
+
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+
+            <div class="page-title">
+                <div>
+                    <h2>آزمون‌های من</h2>
+                    <p>آزمون‌های ثبت‌شده در این دستگاه</p>
+                </div>
+            </div>
+
+            <div id="examsList" class="exams"></div>
+
+        </div>
+    </main>
+
+</div>
+
+
+<!-- =========================
+     صفحه آزمون
+========================= -->
+
+<div id="examPage" class="exam-page">
+
+    <div class="exam-header">
+        <div class="container exam-header-inner">
+
+            <div>
+                <div id="runningExamTitle" class="exam-header-title"></div>
+                <div id="runningExamMode" class="exam-header-counter"></div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="returnToHome()">
+                خروج
+            </button>
+
+        </div>
+    </div>
+
+    <main>
+        <div class="container">
+
+            <div class="question-container">
+
+                <div class="progress-wrapper">
+
+                    <div class="progress-info">
+                        <span id="progressQuestion"></span>
+                        <span id="progressPercent"></span>
+                    </div>
+
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar"></div>
+                    </div>
+
+                </div>
+
+                <div id="questionArea"></div>
+
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+
+<!-- =========================
+     Modal ثبت آزمون
+========================= -->
+
+<div id="newExamModal" class="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>ثبت آزمون جدید</h3>
+
+            <button class="close" onclick="closeNewExamModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>عنوان آزمون</label>
+
+            <input
+                id="examTitleInput"
+                type="text"
+                placeholder="مثلاً آزمون آزمایشی شماره ۱"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label>تاریخ آزمون</label>
+
+            <input
+                id="examDateInput"
+                type="text"
+                placeholder="1405/05/25"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label>تعداد سؤالات</label>
+
+            <input
+                id="examQuestionCountInput"
+                type="number"
+                min="1"
+                max="1000"
+                placeholder="مثلاً 50"
+            >
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                class="btn btn-secondary"
+                onclick="closeNewExamModal()"
+            >
+                انصراف
+            </button>
+
+            <button
+                class="btn btn-primary"
+                onclick="createExam()"
+            >
+                شروع آزمون
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     Modal خلاصه‌نویسی
+========================= -->
+<div id="notesModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>خلاصه‌نویسی آزمون</h3>
+            <button class="close" onclick="closeNotesModal()">×</button>
+        </div>
+        <div class="form-group">
+            <label>نکات، اشکالات و مطالب مهم</label>
+            <textarea id="notesInput" placeholder="هر چیزی که می‌خواهید درباره این آزمون ثبت کنید..."></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeNotesModal()">انصراف</button>
+            <button class="btn btn-primary" onclick="saveNotes()">ذخیره خلاصه</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    /* =====================================================
+       Storage
+    ===================================================== */
+
+    const STORAGE_KEY = "my_exam_manager_v1";
+
+    let exams = JSON.parse(
+        localStorage.getItem(STORAGE_KEY) || "[]"
+    );
+
+    exams.forEach(exam => {
+        if (typeof exam.notes !== "string") {
+            exam.notes = "";
+        }
+    });
+
+    let currentExamId = null;
+    let currentQuestionIndex = 0;
+    let currentMode = "exam";
+
+
+    /* =====================================================
+       ذخیره اطلاعات
+    ===================================================== */
+
+    function saveData() {
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(exams)
+        );
+
+    }
+
+
+    /* =====================================================
+       تاریخ شمسی
+    ===================================================== */
+
+    function gregorianToJalali(gy, gm, gd) {
+
+        const gDaysInMonth = [
+            31, 28, 31, 30, 31, 30,
+            31, 31, 30, 31, 30, 31
+        ];
+
+        const jDaysInMonth = [
+            31, 31, 31, 31, 31, 31,
+            30, 30, 30, 30, 30, 29
+        ];
+
+        let gy2 = gy - 1600;
+        let gm2 = gm - 1;
+        let gd2 = gd - 1;
+
+        let gDayNo =
+            365 * gy2 +
+            Math.floor((gy2 + 3) / 4) -
+            Math.floor((gy2 + 99) / 100) +
+            Math.floor((gy2 + 399) / 400);
+
+        for (let i = 0; i < gm2; ++i) {
+            gDayNo += gDaysInMonth[i];
+        }
+
+        if (
+            gm2 > 1 &&
+            ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0)
+        ) {
+            gDayNo++;
+        }
+
+        gDayNo += gd2;
+
+        let jDayNo = gDayNo - 79;
+
+        const jNp = Math.floor(jDayNo / 12053);
+
+        jDayNo %= 12053;
+
+        let jy = 979 + 33 * jNp + 4 * Math.floor(jDayNo / 1461);
+
+        jDayNo %= 1461;
+
+        if (jDayNo >= 366) {
+
+            jy += Math.floor((jDayNo - 1) / 365);
+
+            jDayNo = (jDayNo - 1) % 365;
+
+        }
+
+        let jm = 0;
+
+        for (
+            let i = 0;
+            i < 11 &&
+            jDayNo >= jDaysInMonth[i];
+            ++i
+        ) {
+            jDayNo -= jDaysInMonth[i];
+            jm++;
+        }
+
+        const jd = jDayNo + 1;
+
+        return [
+            jy,
+            jm + 1,
+            jd
+        ];
+    }
+
+
+    function getTodayJalali() {
+
+        const now = new Date();
+
+        const result = gregorianToJalali(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            now.getDate()
+        );
+
+        return (
+            result[0] +
+            "/" +
+            String(result[1]).padStart(2, "0") +
+            "/" +
+            String(result[2]).padStart(2, "0")
+        );
+    }
+
+
+    /* =====================================================
+       Modal
+    ===================================================== */
+
+    function openNewExamModal() {
+
+        document
+            .getElementById("newExamModal")
+            .classList.add("active");
+
+        document
+            .getElementById("examDateInput")
+            .value = getTodayJalali();
+
+        setTimeout(() => {
+
+            document
+                .getElementById("examTitleInput")
+                .focus();
+
+        }, 100);
+
+    }
+
+
+    function closeNewExamModal() {
+
+        document
+            .getElementById("newExamModal")
+            .classList.remove("active");
+
+        document.getElementById("examTitleInput").value = "";
+        document.getElementById("examQuestionCountInput").value = "";
+
+    }
+
+
+    /* =====================================================
+       ساخت آزمون
+    ===================================================== */
+
+    function createExam() {
+
+        const title =
+            document
+                .getElementById("examTitleInput")
+                .value
+                .trim();
+
+        const date =
+            document
+                .getElementById("examDateInput")
+                .value
+                .trim();
+
+        const count =
+            Number(
+                document
+                    .getElementById("examQuestionCountInput")
+                    .value
+            );
+
+        if (!title) {
+
+            alert("عنوان آزمون را وارد کنید.");
+            return;
+
+        }
+
+        if (!date) {
+
+            alert("تاریخ آزمون را وارد کنید.");
+            return;
+
+        }
+
+        if (!count || count < 1) {
+
+            alert("تعداد سؤالات را وارد کنید.");
+            return;
+
+        }
+
+        const exam = {
+
+            id:
+                Date.now().toString(),
+
+            title: title,
+
+            date: date,
+
+            questionCount: count,
+
+            answers:
+                Array(count).fill(null),
+
+            correctAnswers:
+                Array(count).fill(null),
+
+            completed: false,
+
+            evaluated: false,
+
+            result: null,
+
+            notes: "",
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+        exams.unshift(exam);
+
+        saveData();
+
+        closeNewExamModal();
+
+        renderExams();
+
+        startExam(exam.id);
+
+    }
+
+
+    /* =====================================================
+       لیست آزمون‌ها
+    ===================================================== */
+
+    function renderExams() {
+
+        const container =
+            document.getElementById("examsList");
+
+        if (exams.length === 0) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    <div class="empty-icon">📝</div>
+
+                    <h3>هنوز آزمونی ثبت نکرده‌اید</h3>
+
+                    <p style="margin-top:8px">
+                        اولین آزمون خود را ثبت کنید.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+        container.innerHTML = exams.map(exam => {
+
+            let badge = "";
+            let badgeClass = "";
+
+            if (exam.evaluated) {
+
+                badge = "سنجش شده";
+                badgeClass = "badge-done";
+
+            } else if (exam.completed) {
+
+                badge = "آماده سنجش";
+                badgeClass = "badge-pending";
+
+            } else {
+
+                badge = "در حال انجام";
+                badgeClass = "badge-pending";
+
+            }
+
+            let resultHTML = "";
+
+            if (exam.evaluated && exam.result) {
+
+                resultHTML = `
+
+                    <div style="
+                        margin-top:15px;
+                        padding-top:15px;
+                        border-top:1px solid var(--border);
+                        font-size:12px;
+                    ">
+
+                        نتیجه:
+                        <strong class="correct">
+                            ${exam.result.correct} صحیح
+                        </strong>
+
+                        ·
+
+                        <strong class="wrong">
+                            ${exam.result.wrong} غلط
+                        </strong>
+
+                        ·
+
+                        <strong class="blank">
+                            ${exam.result.blank} نزده
+                        </strong>
+
+                        ·
+
+                        درصد:
+                        <strong>
+                            ${exam.result.percent}٪
+                        </strong>
+
+                    </div>
+
+                `;
+
+            }
+
+            let actions = "";
+
+            if (!exam.completed) {
+
+                actions += `
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="startExam('${exam.id}')"
+                    >
+                        ادامه آزمون
+                    </button>
+
+                `;
+
+            } else if (!exam.evaluated) {
+
+                actions += `
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="startEvaluation('${exam.id}')"
+                    >
+                        سنجش آزمون
+                    </button>
+
+                `;
+
+            } else {
+
+                actions += `
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="showResult('${exam.id}')"
+                    >
+                        مشاهده نتیجه
+                    </button>
+
+                    <button
+                        class="btn btn-success"
+                        onclick="openNotesModal('${exam.id}')"
+                    >
+                        📝 ${exam.notes ? "ویرایش خلاصه" : "خلاصه‌نویسی"}
+                    </button>
+
+                `;
+
+            }
+
+            actions += `
+
+                <button
+                    class="btn btn-danger"
+                    onclick="deleteExam('${exam.id}')"
+                >
+                    حذف
+                </button>
+
+            `;
+
+            return `
+
+                <div class="exam-card">
+
+                    <div class="exam-top">
+
+                        <div>
+
+                            <div class="exam-title">
+                                ${escapeHTML(exam.title)}
+                            </div>
+
+                            <div class="exam-date">
+                                تاریخ آزمون: ${exam.date}
+                            </div>
+
+                        </div>
+
+                        <span class="badge ${badgeClass}">
+                            ${badge}
+                        </span>
+
+                    </div>
+
+                    <div class="exam-info">
+
+                        <span>
+                            تعداد سؤالات:
+                            <strong>${exam.questionCount}</strong>
+                        </span>
+
+                        <span>
+                            پاسخ داده شده:
+                            <strong>
+                                ${exam.answers.filter(x => x !== null).length}
+                            </strong>
+                        </span>
+
+                    </div>
+
+                    <div class="exam-actions">
+                        ${actions}
+                    </div>
+
+                    ${resultHTML}
+
+                </div>
+
+            `;
+
+        }).join("");
+
+    }
+
+
+    /* =====================================================
+       شروع آزمون
+    ===================================================== */
+
+    function startExam(id) {
+
+        const exam =
+            exams.find(e => e.id === id);
+
+        if (!exam) return;
+
+        currentExamId = id;
+        currentMode = "exam";
+
+        currentQuestionIndex =
+            findFirstUnanswered(exam.answers);
+
+        if (currentQuestionIndex === -1) {
+
+            currentQuestionIndex =
+                exam.questionCount - 1;
+
+        }
+
+        showExamPage();
+
+        renderQuestion();
+
+    }
+
+
+    /* =====================================================
+       پیدا کردن اولین سؤال نزده
+    ===================================================== */
+
+    function findFirstUnanswered(answers) {
+
+        return answers.findIndex(
+            answer => answer === null
+        );
+
+    }
+
+
+    /* =====================================================
+       شروع سنجش
+    ===================================================== */
+
+    function startEvaluation(id) {
+
+        const exam =
+            exams.find(e => e.id === id);
+
+        if (!exam) return;
+
+        currentExamId = id;
+
+        currentMode = "evaluation";
+
+        currentQuestionIndex =
+            findFirstUnanswered(exam.correctAnswers);
+
+        if (currentQuestionIndex === -1) {
+
+            currentQuestionIndex =
+                exam.questionCount - 1;
+
+        }
+
+        showExamPage();
+
+        renderQuestion();
+
+    }
+
+
+    /* =====================================================
+       نمایش صفحه آزمون
+    ===================================================== */
+
+    function showExamPage() {
+
+        document
+            .getElementById("homePage")
+            .style.display = "none";
+
+        document
+            .getElementById("examPage")
+            .classList.add("active");
+
+        window.scrollTo(0, 0);
+
+    }
+
+
+    function returnToHome() {
+
+        document
+            .getElementById("examPage")
+            .classList.remove("active");
+
+        document
+            .getElementById("homePage")
+            .style.display = "block";
+
+        renderExams();
+
+        window.scrollTo(0, 0);
+
+    }
+
+
+    /* =====================================================
+       نمایش سؤال
+    ===================================================== */
+
+    function renderQuestion() {
+
+        const exam =
+            exams.find(e => e.id === currentExamId);
+
+        if (!exam) return;
+
+        const answers =
+            currentMode === "exam"
+                ? exam.answers
+                : exam.correctAnswers;
+
+        const selected =
+            answers[currentQuestionIndex];
+
+        document.getElementById("runningExamTitle").textContent =
+            exam.title;
+
+        document.getElementById("runningExamMode").textContent =
+            currentMode === "exam"
+                ? "حالت آزمون"
+                : "ثبت پاسخ‌های صحیح";
+
+        document.getElementById("progressQuestion").textContent =
+            `سؤال ${currentQuestionIndex + 1} از ${exam.questionCount}`;
+
+        const percent =
+            ((currentQuestionIndex + 1) / exam.questionCount) * 100;
+
+        document.getElementById("progressPercent").textContent =
+            `${Math.round(percent)}٪`;
+
+        document.getElementById("progressBar").style.width =
+            `${percent}%`;
+
+
+        let html = `
+
+            <div class="question-card">
+
+                <div class="question-number">
+                    سؤال ${currentQuestionIndex + 1}
+                </div>
+
+                <div class="question-text">
+                    سؤال ${toPersianNumber(currentQuestionIndex + 1)}
+                </div>
+
+                <div class="options">
+
+        `;
+
+        for (let i = 0; i < 4; i++) {
+
+            const isSelected =
+                selected === i;
+
+            html += `
+
+                <button
+                    class="option ${isSelected ? "selected" : ""}"
+                    onclick="selectOption(${i})"
+                >
+
+                    <span class="option-number">
+                        ${toPersianNumber(i + 1)}
+                    </span>
+
+                    <span class="option-text">
+                        گزینه ${toPersianNumber(i + 1)}
+                    </span>
+
+                </button>
+
+            `;
+
+        }
+
+        html += `
+
+                </div>
+
+                <div class="question-nav">
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="previousQuestion()"
+                        ${currentQuestionIndex === 0 ? "disabled" : ""}
+                    >
+                        ← قبلی
+                    </button>
+
+                    <div class="question-nav-center">
+                        ${currentQuestionIndex + 1}
+                        /
+                        ${exam.questionCount}
+                    </div>
+
+                    ${
+                        currentQuestionIndex === exam.questionCount - 1
+
+                        ?
+
+                        `
+                        <button
+                            class="btn btn-primary"
+                            onclick="finishCurrentMode()"
+                        >
+                            ${
+                                currentMode === "exam"
+                                    ? "پایان آزمون"
+                                    : "ثبت سنجش"
+                            }
+                        </button>
+                        `
+
+                        :
+
+                        `
+                        <button
+                            class="btn btn-secondary"
+                            onclick="nextQuestion()"
+                        >
+                            بعدی →
+                        </button>
+                        `
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+        document
+            .getElementById("questionArea")
+            .innerHTML = html;
+
+    }
+
+
+    /* =====================================================
+       انتخاب گزینه
+    ===================================================== */
+
+    function selectOption(optionIndex) {
+
+        const exam =
+            exams.find(e => e.id === currentExamId);
+
+        if (!exam) return;
+
+        if (currentMode === "exam") {
+
+            exam.answers[currentQuestionIndex] =
+                optionIndex;
+
+        } else {
+
+            exam.correctAnswers[currentQuestionIndex] =
+                optionIndex;
+
+        }
+
+        saveData();
+
+        /*
+         * کمی تأخیر می‌دهیم تا کاربر انتخاب
+         * خودش را ببیند، سپس سؤال بعدی.
+         */
+
+        if (
+            currentQuestionIndex <
+            exam.questionCount - 1
+        ) {
+
+            setTimeout(() => {
+
+                currentQuestionIndex++;
+
+                renderQuestion();
+
+            }, 120);
+
+        } else {
+
+            renderQuestion();
+
+        }
+
+    }
+
+
+    /* =====================================================
+       سؤال قبلی
+    ===================================================== */
+
+    function previousQuestion() {
+
+        if (currentQuestionIndex <= 0) return;
+
+        currentQuestionIndex--;
+
+        renderQuestion();
+
+    }
+
+
+    /* =====================================================
+       سؤال بعدی
+    ===================================================== */
+
+    function nextQuestion() {
+
+        const exam =
+            exams.find(e => e.id === currentExamId);
+
+        if (!exam) return;
+
+        if (
+            currentQuestionIndex <
+            exam.questionCount - 1
+        ) {
+
+            currentQuestionIndex++;
+
+            renderQuestion();
+
+        }
+
+    }
+
+
+    /* =====================================================
+       پایان آزمون / ثبت سنجش
+    ===================================================== */
+
+    function finishCurrentMode() {
+
+        const exam =
+            exams.find(e => e.id === currentExamId);
+
+        if (!exam) return;
+
+
+        if (currentMode === "exam") {
+
+            const answered =
+                exam.answers.filter(
+                    answer => answer !== null
+                ).length;
+
+            const unanswered =
+                exam.questionCount - answered;
+
+            if (unanswered > 0) {
+
+                const confirmFinish =
+                    confirm(
+                        `هنوز ${unanswered} سؤال را پاسخ نداده‌اید.\nآیا می‌خواهید آزمون را تمام کنید؟`
+                    );
+
+                if (!confirmFinish) return;
+
+            }
+
+            exam.completed = true;
+
+            saveData();
+
+            returnToHome();
+
+        } else {
+
+            const missingIndex = exam.correctAnswers.findIndex(
+                answer => answer === null
+            );
+
+            if (missingIndex !== -1) {
+                alert(
+                    `پاسخ صحیح سؤال ${missingIndex + 1} هنوز ثبت نشده است.`
+                );
+                currentQuestionIndex = missingIndex;
+                renderQuestion();
+                return;
+            }
+
+            evaluateExam(exam);
+        }
+
+    }
+
+
+    /* =====================================================
+       محاسبه نتیجه
+    ===================================================== */
+
+    function evaluateExam(exam) {
+
+        let correct = 0;
+        let wrong = 0;
+        let blank = 0;
+
+        for (let i = 0; i < exam.questionCount; i++) {
+
+            const userAnswer =
+                exam.answers[i];
+
+            const correctAnswer =
+                exam.correctAnswers[i];
+
+            if (userAnswer === null) {
+
+                blank++;
+
+            } else if (
+                correctAnswer !== null &&
+                userAnswer === correctAnswer
+            ) {
+
+                correct++;
+
+            } else {
+
+                wrong++;
+
+            }
+
+        }
+
+        const percent =
+            exam.questionCount === 0
+                ? 0
+                : (correct / exam.questionCount) * 100;
+
+        exam.result = {
+
+            correct: correct,
+
+            wrong: wrong,
+
+            blank: blank,
+
+            percent: Number(percent.toFixed(2))
+
+        };
+
+        exam.evaluated = true;
+
+        saveData();
+
+        showResult(exam.id);
+
+    }
+
+
+    /* =====================================================
+       نمایش نتیجه
+    ===================================================== */
+
+    function showResult(id, filter = "all") {
+
+        const exam = exams.find(e => e.id === id);
+        if (!exam || !exam.result) return;
+
+        currentExamId = id;
+
+        document.getElementById("homePage").style.display = "none";
+        document.getElementById("examPage").classList.add("active");
+        document.getElementById("runningExamTitle").textContent = exam.title;
+        document.getElementById("runningExamMode").textContent = "نتیجه آزمون";
+        document.getElementById("progressQuestion").textContent = "نتیجه نهایی";
+        document.getElementById("progressPercent").textContent = `${exam.result.percent}٪`;
+        document.getElementById("progressBar").style.width = "100%";
+
+        const questions = exam.answers.map((userAnswer, index) => {
+            const correctAnswer = exam.correctAnswers[index];
+            let status, statusClass;
+
+            if (userAnswer === null) {
+                status = "نزده";
+                statusClass = "blank";
+            } else if (correctAnswer !== null && userAnswer === correctAnswer) {
+                status = "صحیح";
+                statusClass = "correct";
+            } else {
+                status = "غلط";
+                statusClass = "wrong";
+            }
+
+            return { index, userAnswer, correctAnswer, status, statusClass };
+        });
+
+        const filteredQuestions = questions.filter(item => {
+            if (filter === "wrong") return item.statusClass === "wrong";
+            if (filter === "blank") return item.statusClass === "blank";
+            if (filter === "correct") return item.statusClass === "correct";
+            return true;
+        });
+
+        const optionText = answer =>
+            answer === null ? "نزده" : `گزینه ${toPersianNumber(answer + 1)}`;
+
+        const questionHTML = filteredQuestions.length
+            ? filteredQuestions.map(item => `
+                <div class="question-result">
+                    <div class="question-result-head">
+                        <div class="question-result-number">سؤال ${toPersianNumber(item.index + 1)}</div>
+                        <span class="question-status ${item.statusClass}">${item.status}</span>
+                    </div>
+                    <div class="answer-row">
+                        <span class="answer-chip">پاسخ شما: <strong>${optionText(item.userAnswer)}</strong></span>
+                        <span class="answer-chip">پاسخ صحیح: <strong>${optionText(item.correctAnswer)}</strong></span>
+                    </div>
+                </div>
+            `).join("")
+            : `<div class="empty" style="padding:35px 15px">موردی برای نمایش در این فیلتر وجود ندارد.</div>`;
+
+        const notesHTML = exam.notes
+            ? `
+                <div class="notes-preview">
+                    <div class="notes-label">📝 خلاصه و نکات آزمون</div>
+                    ${escapeHTML(exam.notes)}
+                </div>
+            `
+            : "";
+
+        document.getElementById("questionArea").innerHTML = `
+            <div class="result-card">
+                <div class="result-title">نتیجه ${escapeHTML(exam.title)}</div>
+                <div class="result-subtitle">تاریخ آزمون: ${exam.date}</div>
+                <div class="result-percent">${exam.result.percent}٪</div>
+
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-number correct">${exam.result.correct}</div>
+                        <div class="result-label">صحیح</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-number wrong">${exam.result.wrong}</div>
+                        <div class="result-label">غلط</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-number blank">${exam.result.blank}</div>
+                        <div class="result-label">نزده</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;color:var(--muted);font-size:12px">تعداد کل سؤالات: ${exam.questionCount}</div>
+
+                <div class="result-actions">
+                    <button class="btn btn-success" onclick="openNotesModal('${exam.id}')">
+                        📝 ${exam.notes ? "ویرایش خلاصه" : "خلاصه‌نویسی"}
+                    </button>
+                </div>
+
+                ${notesHTML}
+
+                <div class="result-filters">
+                    <button class="filter-btn ${filter === "all" ? "active" : ""}" onclick="showResult('${exam.id}', 'all')">همه (${exam.questionCount})</button>
+                    <button class="filter-btn ${filter === "wrong" ? "active" : ""}" onclick="showResult('${exam.id}', 'wrong')">غلط‌ها (${exam.result.wrong})</button>
+                    <button class="filter-btn ${filter === "blank" ? "active" : ""}" onclick="showResult('${exam.id}', 'blank')">نزده‌ها (${exam.result.blank})</button>
+                    <button class="filter-btn ${filter === "correct" ? "active" : ""}" onclick="showResult('${exam.id}', 'correct')">صحیح‌ها (${exam.result.correct})</button>
+                </div>
+
+                <div class="question-results">${questionHTML}</div>
+
+                <div class="back-home">
+                    <button class="btn btn-primary" onclick="returnToHome()">بازگشت به آزمون‌ها</button>
+                </div>
+            </div>
+        `;
+
+        window.scrollTo(0, 0);
+    }
+
+
+    /* =====================================================
+       خلاصه‌نویسی آزمون
+    ===================================================== */
+
+    function openNotesModal(id) {
+        const exam = exams.find(e => e.id === id);
+        if (!exam || !exam.evaluated) return;
+
+        currentExamId = id;
+        document.getElementById("notesInput").value = exam.notes || "";
+        document.getElementById("notesModal").classList.add("active");
+
+        setTimeout(() => document.getElementById("notesInput").focus(), 100);
+    }
+
+    function closeNotesModal() {
+        document.getElementById("notesModal").classList.remove("active");
+    }
+
+    function saveNotes() {
+        const exam = exams.find(e => e.id === currentExamId);
+        if (!exam) return;
+
+        exam.notes = document.getElementById("notesInput").value.trim();
+        saveData();
+        closeNotesModal();
+        renderExams();
+        showResult(exam.id);
+    }
+
+
+    /* =====================================================
+       حذف آزمون
+    ===================================================== */
+
+    function deleteExam(id) {
+
+        const exam =
+            exams.find(e => e.id === id);
+
+        if (!exam) return;
+
+        const confirmDelete =
+            confirm(
+                `آیا از حذف آزمون «${exam.title}» مطمئن هستید؟`
+            );
+
+        if (!confirmDelete) return;
+
+        exams =
+            exams.filter(e => e.id !== id);
+
+        saveData();
+
+        renderExams();
+
+    }
+
+
+    /* =====================================================
+       تبدیل اعداد
+    ===================================================== */
+
+    function toPersianNumber(number) {
+
+        return String(number).replace(
+            /\d/g,
+            digit =>
+                "۰۱۲۳۴۵۶۷۸۹"[digit]
+        );
+
+    }
+
+
+    /* =====================================================
+       جلوگیری از HTML Injection در عنوان
+    ===================================================== */
+
+    function escapeHTML(text) {
+
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    /* =====================================================
+       شروع برنامه
+    ===================================================== */
+
+    renderExams();
+
+/* =====================================================
+   THEME SYSTEM
+===================================================== */
+
+const THEME_STORAGE_KEY = "exam_manager_theme";
+
+
+/*
+ * اعمال تم
+ */
+
+function applyTheme(theme) {
+
+    const body = document.body;
+
+    if (theme === "dark") {
+
+        body.setAttribute("data-theme", "dark");
+
+    } else if (theme === "focus") {
+
+        body.setAttribute("data-theme", "focus");
+
+    } else {
+
+        body.removeAttribute("data-theme");
+
+    }
+
+    localStorage.setItem(
+        THEME_STORAGE_KEY,
+        theme
+    );
+
+}
+
+
+/*
+ * انتخاب تم
+ */
+
+function setTheme(theme) {
+
+    applyTheme(theme);
+
+    closeThemeMenu();
+
+}
+
+
+/*
+ * باز و بسته کردن منوی تم
+ */
+
+function toggleThemeMenu() {
+
+    document
+        .getElementById("themeMenu")
+        .classList.toggle("active");
+
+}
+
+
+/*
+ * بستن منوی تم
+ */
+
+function closeThemeMenu() {
+
+    const menu =
+        document.getElementById("themeMenu");
+
+    if (menu) {
+
+        menu.classList.remove("active");
+
+    }
+
+}
+
+
+/*
+ * بستن منو وقتی بیرون آن کلیک شود
+ */
+
+document.addEventListener("click", function(event) {
+
+    const selector =
+        document.querySelector(".theme-selector");
+
+    if (!selector) return;
+
+    if (!selector.contains(event.target)) {
+
+        closeThemeMenu();
+
+    }
+
+});
+
+
+/*
+ * بارگذاری تم ذخیره‌شده
+ */
+
+function loadSavedTheme() {
+
+    const savedTheme =
+        localStorage.getItem(
+            THEME_STORAGE_KEY
+        );
+
+    if (
+        savedTheme === "dark" ||
+        savedTheme === "focus" ||
+        savedTheme === "light"
+    ) {
+
+        applyTheme(savedTheme);
+
+    } else {
+
+        applyTheme("light");
+
+    }
+
+}
+
+
+/*
+ * اجرای اولیه
+ */
+
+loadSavedTheme();
+</script>
+
+</body>
+</html>

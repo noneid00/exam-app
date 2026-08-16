@@ -1,0 +1,17 @@
+{
+  "name": "مدیریت آزمون‌ها",
+  "short_name": "آزمون‌ها",
+  "description": "برنامه مدیریت، انجام و سنجش آزمون‌ها",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

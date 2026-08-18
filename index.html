@@ -8,15 +8,16 @@
 
     <style>
         @font-face {
-          font-family: "mikhak";
-          src: url("Mikhak-Regular.ttf") format("truetype");
+          font-family: "Mikhak";
+          src: url("Mikhak-Regular.woff2") format("woff2");
+          font-display: swap;
         }
         
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: "mikhak";
+            font-family: "Mikhak";
         }
 
         :root {
@@ -34,7 +35,7 @@
         }
 
         body {
-            font-family: Tahoma, Arial, sans-serif;
+            /* font-family: Tahoma, Arial, sans-serif; */
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;

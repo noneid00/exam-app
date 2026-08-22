@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>شمارش معکوس کنکور</title>
+
+    <style>
+      @font-face {
+        font-family: "Mikhak";
+        src: url("Mikhak-Regular.woff2") format("woff2");
+        font-display: swap;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Mikhak";
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Tahoma, Arial, sans-serif;
+        background:
+          radial-gradient(
+            circle at 20% 20%,
+            rgba(124, 58, 237, 0.25),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(59, 130, 246, 0.2),
+            transparent 30%
+          ),
+          linear-gradient(135deg, #080b18, #11162b 50%, #080b18);
+
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: rgba(139, 92, 246, 0.12);
+        filter: blur(100px);
+        top: -200px;
+        right: -150px;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        width: 400px;
+        height: 400px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.12);
+        filter: blur(100px);
+        bottom: -200px;
+        left: -100px;
+      }
+
+      .container {
+        width: min(1100px, 92%);
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 8px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 50px;
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(10px);
+        color: #c4b5fd;
+        font-size: 14px;
+        margin-bottom: 25px;
+      }
+
+      h1 {
+        font-size: clamp(32px, 6vw, 65px);
+        font-weight: 900;
+        margin-bottom: 15px;
+
+        background: linear-gradient(90deg, #fff, #c4b5fd, #60a5fa);
+
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .subtitle {
+        color: #a5adc6;
+        font-size: 16px;
+        margin-bottom: 45px;
+      }
+
+      .countdown {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+      }
+
+      .card {
+        position: relative;
+        padding: 35px 15px;
+        border-radius: 25px;
+
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.25),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+        transition: 0.3s;
+      }
+
+      .card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(167, 139, 250, 0.45);
+        box-shadow:
+          0 25px 60px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(124, 58, 237, 0.12);
+      }
+
+      .number {
+        font-size: clamp(42px, 7vw, 75px);
+        font-weight: 900;
+        line-height: 1;
+
+        background: linear-gradient(180deg, #ffffff, #a78bfa);
+
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+
+        font-variant-numeric: tabular-nums;
+      }
+
+      .label {
+        margin-top: 15px;
+        color: #9ca3af;
+        font-size: 15px;
+      }
+
+      .date-box {
+        margin-top: 35px;
+        padding: 18px 25px;
+        border-radius: 18px;
+
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+
+        color: #d1d5db;
+      }
+
+      .date-box strong {
+        color: #c4b5fd;
+      }
+
+      /* تاریخ امروز */
+      .today-box {
+        margin-top: 15px;
+        padding: 14px 20px;
+        border-radius: 15px;
+
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+
+        color: #a5adc6;
+        font-size: 14px;
+      }
+
+      .today-box strong {
+        color: #60a5fa;
+      }
+
+      .quote {
+        margin-top: 35px;
+        color: #7f89a6;
+        font-size: 14px;
+      }
+
+      @media (max-width: 700px) {
+        .countdown {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+
+        .card {
+          padding: 28px 10px;
+        }
+
+        .subtitle {
+          margin-bottom: 30px;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .number {
+          font-size: 42px;
+        }
+
+        .label {
+          font-size: 13px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="badge">⏳ شمارش معکوس تا روز بزرگ</div>
+
+      <h1>تا کنکور چقدر مونده؟</h1>
+
+      <p class="subtitle">
+        هر ثانیه‌ای که می‌گذره، یک قدم به هدفت نزدیک‌تر می‌شی 🚀
+      </p>
+
+      <div class="countdown">
+        <div class="card">
+          <div class="number" id="days">00</div>
+          <div class="label">روز</div>
+        </div>
+
+        <div class="card">
+          <div class="number" id="hours">00</div>
+          <div class="label">ساعت</div>
+        </div>
+
+        <div class="card">
+          <div class="number" id="minutes">00</div>
+          <div class="label">دقیقه</div>
+        </div>
+
+        <div class="card">
+          <div class="number" id="seconds">00</div>
+          <div class="label">ثانیه</div>
+        </div>
+      </div>
+
+      <div class="date-box">
+        تاریخ کنکور:
+        <strong>۲۰ شهریور ۱۴۰۵</strong>
+        <br />
+        <small>11 September 2026</small>
+      </div>
+
+      <!-- تاریخ امروز -->
+      <div class="today-box">
+        📅 امروز:
+        <strong id="todayDate">در حال دریافت تاریخ...</strong>
+      </div>
+
+      <div class="quote">هنوز وقت هست؛ ولی هر ثانیه مهمه.</div>
+    </div>
+
+    <script>
+      // تاریخ کنکور
+      // ۲۰ شهریور ۱۴۰۵ = 11 September 2026
+      const examDate = new Date("2026-09-11T08:00:00");
+
+      function updateCountdown() {
+        const now = new Date();
+
+        let difference = examDate - now;
+
+        if (difference <= 0) {
+          document.getElementById("days").textContent = "00";
+          document.getElementById("hours").textContent = "00";
+          document.getElementById("minutes").textContent = "00";
+          document.getElementById("seconds").textContent = "00";
+
+          document.querySelector("h1").textContent = "🎯 روز کنکور فرا رسید!";
+
+          return;
+        }
+
+        const totalSeconds = Math.floor(difference / 1000);
+
+        const days = Math.floor(totalSeconds / 86400);
+
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+        const seconds = totalSeconds % 60;
+
+        document.getElementById("days").textContent = days
+          .toString()
+          .padStart(2, "0");
+
+        document.getElementById("hours").textContent = hours
+          .toString()
+          .padStart(2, "0");
+
+        document.getElementById("minutes").textContent = minutes
+          .toString()
+          .padStart(2, "0");
+
+        document.getElementById("seconds").textContent = seconds
+          .toString()
+          .padStart(2, "0");
+      }
+
+      // تبدیل تاریخ میلادی به شمسی
+      function getPersianDate() {
+        const now = new Date();
+
+        const persianDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }).format(now);
+
+        document.getElementById("todayDate").textContent = persianDate;
+      }
+
+      // اجرای اولیه
+      updateCountdown();
+      getPersianDate();
+
+      // بروزرسانی شمارش معکوس هر ثانیه
+      setInterval(updateCountdown, 1000);
+
+      // بروزرسانی تاریخ امروز هر دقیقه
+      setInterval(getPersianDate, 60000);
+    </script>
+  </body>
+</html>

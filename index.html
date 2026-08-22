@@ -819,7 +819,9 @@
       body {
         background: var(--bg);
         color: var(--text);
-        transition: background-color 0.25s ease, color 0.25s ease;
+        transition:
+          background-color 0.25s ease,
+          color 0.25s ease;
       }
 
       header,
@@ -836,7 +838,9 @@
         background: var(--card);
         border-color: var(--border);
         box-shadow: var(--shadow);
-        transition: background-color 0.25s ease, border-color 0.25s ease,
+        transition:
+          background-color 0.25s ease,
+          border-color 0.25s ease,
           box-shadow 0.25s ease;
       }
 
@@ -900,8 +904,31 @@
       }
 
       * {
-        transition: background-color 0.2s ease, border-color 0.2s ease,
+        transition:
+          background-color 0.2s ease,
+          border-color 0.2s ease,
           color 0.2s ease;
+      }
+
+      .btn-timer-show {
+        width: 43px;
+        height: 43px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+        color: var(--text);
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.2s;
+        text-decoration: none;
+      }
+
+      .btn-timer-show:hover {
+        border-color: var(--primary);
+        transform: translateY(-1px);
       }
 
       /* Theme selector */
@@ -1194,6 +1221,8 @@
               + آزمون جدید
             </button>
 
+            <a href="timer.html" class="btn-timer-show"> ⏰ </a>
+
             <div class="theme-selector">
               <button
                 class="theme-button"
@@ -1459,7 +1488,11 @@
           now.getDate(),
         );
         return (
-          r[0] + "/" + String(r[1]).padStart(2, "0") + "/" + String(r[2]).padStart(2, "0")
+          r[0] +
+          "/" +
+          String(r[1]).padStart(2, "0") +
+          "/" +
+          String(r[2]).padStart(2, "0")
         );
       }
 
@@ -1486,7 +1519,10 @@
           return (
             d.toLocaleDateString("fa-IR") +
             " " +
-            d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" })
+            d.toLocaleTimeString("fa-IR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
           );
         } catch {
           return iso;
@@ -1499,7 +1535,10 @@
       function openNewExamModal() {
         document.getElementById("newExamModal").classList.add("active");
         document.getElementById("examDateInput").value = getTodayJalali();
-        setTimeout(() => document.getElementById("examTitleInput").focus(), 100);
+        setTimeout(
+          () => document.getElementById("examTitleInput").focus(),
+          100,
+        );
       }
 
       function closeNewExamModal() {
@@ -1589,8 +1628,9 @@
             let answeredCount = 0;
             const lastIncomplete = exam.attempts.find((a) => !a.completed);
             if (lastIncomplete) {
-              answeredCount = lastIncomplete.answers.filter((a) => a !== null)
-                .length;
+              answeredCount = lastIncomplete.answers.filter(
+                (a) => a !== null,
+              ).length;
             } else if (exam.attempts.length > 0) {
               // if all completed, use the last one
               const last = exam.attempts[exam.attempts.length - 1];
@@ -1722,7 +1762,8 @@
         currentMode = "exam";
         const answers = exam.attempts[attemptIndex].answers;
         currentQuestionIndex = findFirstUnanswered(answers);
-        if (currentQuestionIndex === -1) currentQuestionIndex = exam.questionCount - 1;
+        if (currentQuestionIndex === -1)
+          currentQuestionIndex = exam.questionCount - 1;
 
         saveData();
         showExamPage();
@@ -1748,11 +1789,15 @@
         currentAttemptIndex = -1; // not used in evaluation mode
         // we need to set correctAnswers (maybe existing or new)
         // if correctAnswers already filled, we can edit them; otherwise start from scratch
-        if (!Array.isArray(exam.correctAnswers) || exam.correctAnswers.length !== exam.questionCount) {
+        if (
+          !Array.isArray(exam.correctAnswers) ||
+          exam.correctAnswers.length !== exam.questionCount
+        ) {
           exam.correctAnswers = Array(exam.questionCount).fill(null);
         }
         currentQuestionIndex = findFirstUnanswered(exam.correctAnswers);
-        if (currentQuestionIndex === -1) currentQuestionIndex = exam.questionCount - 1;
+        if (currentQuestionIndex === -1)
+          currentQuestionIndex = exam.questionCount - 1;
 
         saveData();
         showExamPage();
@@ -1923,7 +1968,8 @@
       function toggleDoubtFlag() {
         const exam = exams.find((e) => e.id === currentExamId);
         if (!exam || currentMode !== "exam") return;
-        exam.doubtFlags[currentQuestionIndex] = !exam.doubtFlags[currentQuestionIndex];
+        exam.doubtFlags[currentQuestionIndex] =
+          !exam.doubtFlags[currentQuestionIndex];
         saveData();
         renderQuestion();
       }
@@ -2066,7 +2112,8 @@
         document.getElementById("runningExamTitle").textContent = exam.title;
         document.getElementById("runningExamMode").textContent = "نتیجه آزمون";
         document.getElementById("progressQuestion").textContent = "نتیجه نهایی";
-        document.getElementById("progressPercent").textContent = `${result.percent}٪`;
+        document.getElementById("progressPercent").textContent =
+          `${result.percent}٪`;
         document.getElementById("progressBar").style.width = "100%";
 
         // build question details for the selected attempt
@@ -2094,7 +2141,8 @@
                 status,
                 statusClass,
                 isDoubt:
-                  Array.isArray(exam.doubtFlags) && exam.doubtFlags[index] === true,
+                  Array.isArray(exam.doubtFlags) &&
+                  exam.doubtFlags[index] === true,
               };
             })
           : [];
@@ -2281,7 +2329,7 @@
         const attemptDate = formatTimestamp(attemptToDelete.timestamp);
 
         const confirmed = confirm(
-          `آیا مطمئن هستید می‌خواهید پاسخگویی شماره ${attemptNumber} را حذف کنید؟\n\nتاریخ: ${attemptDate}\n\nاین عملیات قابل بازگشت نیست.`
+          `آیا مطمئن هستید می‌خواهید پاسخگویی شماره ${attemptNumber} را حذف کنید؟\n\nتاریخ: ${attemptDate}\n\nاین عملیات قابل بازگشت نیست.`,
         );
 
         if (!confirmed) return;
@@ -2300,7 +2348,7 @@
 
         // بعد از حذف، اگر هنوز تلاش کامل وجود دارد، نتیجه آخرین تلاش نمایش داده شود.
         const remainingCompleteAttempts = exam.attempts.filter(
-          (a) => a.completed
+          (a) => a.completed,
         );
 
         if (remainingCompleteAttempts.length > 0) {
@@ -2337,7 +2385,9 @@
         closeNotesModal();
         renderExams();
         // refresh result if showing
-        const isResultPage = document.getElementById("examPage").classList.contains("active");
+        const isResultPage = document
+          .getElementById("examPage")
+          .classList.contains("active");
         if (isResultPage) {
           showResult(exam.id);
         }
@@ -2395,7 +2445,11 @@
 
       function loadSavedTheme() {
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-        if (savedTheme === "dark" || savedTheme === "focus" || savedTheme === "light") {
+        if (
+          savedTheme === "dark" ||
+          savedTheme === "focus" ||
+          savedTheme === "light"
+        ) {
           applyTheme(savedTheme);
         } else {
           applyTheme("light");

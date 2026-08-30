@@ -1216,6 +1216,34 @@
       .attempt-selector select:focus {
         border-color: var(--primary);
       }
+    
+      /* =====================================================
+         TIMERS
+      ===================================================== */
+      .exam-timers{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+      .timer-box{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:6px 8px 6px 6px;box-shadow:0 3px 12px rgba(15,23,42,.05)}
+      .timer-label{color:var(--muted);font-size:10px;white-space:nowrap}
+      .timer-value{direction:ltr;min-width:70px;text-align:center;font-family:monospace;font-size:15px;font-weight:800;letter-spacing:1px;color:var(--text)}
+      .timer-controls{display:flex;gap:4px}
+      .timer-control{border:1px solid var(--border);border-radius:7px;background:var(--secondary-bg);color:var(--secondary-text);padding:5px 7px;font-size:10px;cursor:pointer}
+      .timer-control.stop{background:#fee2e2;color:var(--red)}
+      .timer-control:disabled{opacity:.45;cursor:not-allowed}
+      .question-timer-wrap{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--secondary-bg)}
+      .question-timer-title{color:var(--muted);font-size:11px}
+      .question-timer-value{direction:ltr;font-family:monospace;font-size:17px;font-weight:800;color:var(--text)}
+      .result-timing{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}
+      .result-time-card{border:1px solid var(--border);border-radius:12px;padding:14px 10px}
+      .result-time-value{direction:ltr;font-family:monospace;font-size:18px;font-weight:800;margin-bottom:5px}
+      .result-time-label{color:var(--muted);font-size:11px}
+      @media(max-width:600px){
+        .exam-header-inner{align-items:flex-start}
+        .exam-timers{width:100%;justify-content:flex-start}
+        .timer-box{flex:1 1 100%;justify-content:space-between}
+        .question-timer-wrap{flex-direction:column;align-items:stretch}
+        .question-timer-value{text-align:center}
+        .result-timing{grid-template-columns:1fr}
+      }
+
     </style>
   </head>
 
@@ -1291,13 +1319,21 @@
     <div id="examPage" class="exam-page">
       <div class="exam-header">
         <div class="container exam-header-inner">
-          <div>
+          <div style="min-width:0; flex:1;">
             <div id="runningExamTitle" class="exam-header-title"></div>
             <div id="runningExamMode" class="exam-header-counter"></div>
           </div>
-          <button class="btn btn-secondary" onclick="returnToHome()">
-            خروج
-          </button>
+          <div id="examTimers" class="exam-timers">
+            <div class="timer-box">
+              <span class="timer-label">زمان کل آزمون</span>
+              <span id="examTimerValue" class="timer-value">۰۰:۰۰:۰۰</span>
+              <div class="timer-controls">
+                <button id="examTimerStartBtn" class="timer-control" type="button" onclick="startExamTimer()">▶ شروع</button>
+                <button id="examTimerStopBtn" class="timer-control stop" type="button" onclick="stopExamTimer()">■ توقف</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-secondary" onclick="returnToHome()">خروج</button>
         </div>
       </div>
 
@@ -1487,6 +1523,10 @@
         }
 
         delete exam.doubtFlags;
+
+        exam.attempts.forEach((attempt) => {
+          ensureAttemptTiming(attempt, exam.questionCount || 0);
+        });
 
         if (!Array.isArray(exam.correctAnswers)) {
           exam.correctAnswers = Array(exam.questionCount || 0).fill(null);
@@ -2066,6 +2106,363 @@
           .join("");
       }
 
+
+      /* =====================================================
+       TIMER SYSTEM
+      ===================================================== */
+      let timerIntervalId = null;
+      let timerWasHidden = false;
+
+      function createTiming(questionCount) {
+        return {
+          totalElapsedMs: 0,
+          totalRunning: false,
+          totalLastStartedAt: null,
+          questionElapsedMs: Array(questionCount).fill(0),
+          questionRunning: false,
+          questionLastStartedAt: null,
+          activeQuestionIndex: null,
+        };
+      }
+
+      function ensureAttemptTiming(attempt, questionCount) {
+        if (!attempt.timing || typeof attempt.timing !== "object") {
+          attempt.timing = createTiming(questionCount);
+        }
+        const t = attempt.timing;
+        if (!Number.isFinite(t.totalElapsedMs) || t.totalElapsedMs < 0) t.totalElapsedMs = 0;
+        if (!Array.isArray(t.questionElapsedMs)) t.questionElapsedMs = Array(questionCount).fill(0);
+        if (t.questionElapsedMs.length < questionCount) {
+          t.questionElapsedMs = t.questionElapsedMs.concat(
+            Array(questionCount - t.questionElapsedMs.length).fill(0),
+          );
+        } else if (t.questionElapsedMs.length > questionCount) {
+          t.questionElapsedMs = t.questionElapsedMs.slice(0, questionCount);
+        }
+        if (typeof t.totalRunning !== "boolean") t.totalRunning = false;
+        if (typeof t.questionRunning !== "boolean") t.questionRunning = false;
+        if (!Number.isFinite(t.totalLastStartedAt)) t.totalLastStartedAt = null;
+        if (!Number.isFinite(t.questionLastStartedAt)) t.questionLastStartedAt = null;
+        if (
+          t.activeQuestionIndex !== null &&
+          (!Number.isInteger(t.activeQuestionIndex) ||
+            t.activeQuestionIndex < 0 ||
+            t.activeQuestionIndex >= questionCount)
+        ) {
+          t.activeQuestionIndex = null;
+        }
+        return t;
+      }
+
+      function getCurrentAttempt() {
+        if (!currentExamId || currentAttemptIndex === -1) return null;
+        const exam = exams.find((e) => e.id === currentExamId);
+        if (!exam || !Array.isArray(exam.attempts)) return null;
+        return exam.attempts[currentAttemptIndex] || null;
+      }
+
+      function getCurrentTiming() {
+        const exam = exams.find((e) => e.id === currentExamId);
+        const attempt = getCurrentAttempt();
+        if (!exam || !attempt || currentMode !== "exam") return null;
+        return ensureAttemptTiming(attempt, exam.questionCount);
+      }
+
+      function formatDuration(ms) {
+        const totalSeconds = Math.floor(Math.max(0, Number(ms) || 0) / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return [
+          String(hours).padStart(2, "0"),
+          String(minutes).padStart(2, "0"),
+          String(seconds).padStart(2, "0"),
+        ].join(":");
+      }
+
+      function getLiveElapsed(timing, type, now = Date.now()) {
+        if (!timing) return 0;
+        if (type === "total") {
+          let elapsed = timing.totalElapsedMs || 0;
+          if (timing.totalRunning && Number.isFinite(timing.totalLastStartedAt)) {
+            elapsed += Math.max(0, now - timing.totalLastStartedAt);
+          }
+          return elapsed;
+        }
+        const index = currentQuestionIndex;
+        let elapsed = timing.questionElapsedMs[index] || 0;
+        if (
+          timing.questionRunning &&
+          timing.activeQuestionIndex === index &&
+          Number.isFinite(timing.questionLastStartedAt)
+        ) {
+          elapsed += Math.max(0, now - timing.questionLastStartedAt);
+        }
+        return elapsed;
+      }
+
+      function updateTimerUI() {
+        const timing = getCurrentTiming();
+        if (!timing) {
+          stopTimerInterval();
+          return;
+        }
+        const now = Date.now();
+        const examTimer = document.getElementById("examTimerValue");
+        if (examTimer) {
+          examTimer.textContent = toPersianNumber(formatDuration(getLiveElapsed(timing, "total", now)));
+        }
+        const questionTimer = document.getElementById("questionTimerValue");
+        if (questionTimer) {
+          questionTimer.textContent = toPersianNumber(formatDuration(getLiveElapsed(timing, "question", now)));
+        }
+
+        const examStart = document.getElementById("examTimerStartBtn");
+        const examStop = document.getElementById("examTimerStopBtn");
+        if (examStart) examStart.disabled = timing.totalRunning;
+        if (examStop) examStop.disabled = !timing.totalRunning;
+
+        const questionStart = document.getElementById("questionTimerStartBtn");
+        const questionStop = document.getElementById("questionTimerStopBtn");
+        if (questionStart) questionStart.disabled = timing.questionRunning;
+        if (questionStop) questionStop.disabled = !timing.questionRunning;
+      }
+
+      function startTimerInterval() {
+        if (timerIntervalId !== null) return;
+        timerIntervalId = setInterval(updateTimerUI, 250);
+        updateTimerUI();
+      }
+
+      function stopTimerInterval() {
+        if (timerIntervalId !== null) {
+          clearInterval(timerIntervalId);
+          timerIntervalId = null;
+        }
+      }
+
+      function startExamTimer() {
+        const timing = getCurrentTiming();
+        if (!timing || timing.totalRunning) return;
+        timing.totalRunning = true;
+        timing.totalLastStartedAt = Date.now();
+        saveData();
+        startTimerInterval();
+        updateTimerUI();
+      }
+
+      function stopExamTimer() {
+        const timing = getCurrentTiming();
+        if (!timing || !timing.totalRunning) return;
+        const now = Date.now();
+        if (Number.isFinite(timing.totalLastStartedAt)) {
+          timing.totalElapsedMs += Math.max(0, now - timing.totalLastStartedAt);
+        }
+        timing.totalRunning = false;
+        timing.totalLastStartedAt = null;
+        saveData();
+        updateTimerUI();
+      }
+
+      function startQuestionTimer() {
+        const timing = getCurrentTiming();
+        if (!timing || timing.questionRunning) return;
+        timing.activeQuestionIndex = currentQuestionIndex;
+        timing.questionRunning = true;
+        timing.questionLastStartedAt = Date.now();
+        saveData();
+        startTimerInterval();
+        updateTimerUI();
+      }
+
+      function stopQuestionTimer() {
+        const timing = getCurrentTiming();
+        if (!timing || !timing.questionRunning) return;
+        const now = Date.now();
+        const q = timing.activeQuestionIndex;
+        if (q !== null && Number.isFinite(timing.questionLastStartedAt)) {
+          timing.questionElapsedMs[q] += Math.max(0, now - timing.questionLastStartedAt);
+        }
+        timing.questionRunning = false;
+        timing.questionLastStartedAt = null;
+        timing.activeQuestionIndex = null;
+        saveData();
+        updateTimerUI();
+      }
+
+      function stopAllTimers(save = true) {
+        const timing = getCurrentTiming();
+        if (!timing) return;
+        const now = Date.now();
+
+        if (timing.totalRunning && Number.isFinite(timing.totalLastStartedAt)) {
+          timing.totalElapsedMs += Math.max(0, now - timing.totalLastStartedAt);
+        }
+        if (
+          timing.questionRunning &&
+          timing.activeQuestionIndex !== null &&
+          Number.isFinite(timing.questionLastStartedAt)
+        ) {
+          const q = timing.activeQuestionIndex;
+          timing.questionElapsedMs[q] += Math.max(0, now - timing.questionLastStartedAt);
+        }
+
+        timing.totalRunning = false;
+        timing.totalLastStartedAt = null;
+        timing.questionRunning = false;
+        timing.questionLastStartedAt = null;
+        timing.activeQuestionIndex = null;
+
+        if (save) saveData();
+        updateTimerUI();
+      }
+
+      function pauseTimersForVisibility() {
+        const timing = getCurrentTiming();
+        if (!timing) return;
+        const now = Date.now();
+
+        if (timing.totalRunning && Number.isFinite(timing.totalLastStartedAt)) {
+          timing.totalElapsedMs += Math.max(0, now - timing.totalLastStartedAt);
+          timing.totalLastStartedAt = null;
+        }
+        if (
+          timing.questionRunning &&
+          timing.activeQuestionIndex !== null &&
+          Number.isFinite(timing.questionLastStartedAt)
+        ) {
+          const q = timing.activeQuestionIndex;
+          timing.questionElapsedMs[q] += Math.max(0, now - timing.questionLastStartedAt);
+          timing.questionLastStartedAt = null;
+        }
+
+        timing.totalRunning = false;
+        timing.questionRunning = false;
+        saveData();
+        updateTimerUI();
+      }
+
+      function resumeTimersAfterVisibility() {
+        const timing = getCurrentTiming();
+        if (!timing) return;
+        const now = Date.now();
+
+        if (window.__resumeExamTimer) {
+          timing.totalRunning = true;
+          timing.totalLastStartedAt = now;
+        }
+        if (window.__resumeQuestionTimer) {
+          timing.questionRunning = true;
+          timing.activeQuestionIndex = currentQuestionIndex;
+          timing.questionLastStartedAt = now;
+        }
+
+        window.__resumeExamTimer = false;
+        window.__resumeQuestionTimer = false;
+        timerWasHidden = false;
+        saveData();
+        startTimerInterval();
+        updateTimerUI();
+      }
+
+      function handleVisibilityChange() {
+        if (currentMode !== "exam") return;
+        const timing = getCurrentTiming();
+        if (!timing) return;
+
+        if (document.hidden) {
+          window.__resumeExamTimer = timing.totalRunning === true;
+          window.__resumeQuestionTimer = timing.questionRunning === true;
+          if (window.__resumeExamTimer || window.__resumeQuestionTimer) {
+            timerWasHidden = true;
+            pauseTimersForVisibility();
+          }
+        } else if (timerWasHidden) {
+          resumeTimersAfterVisibility();
+        }
+      }
+
+      function prepareQuestionTimerForQuestionChange(nextIndex) {
+        const timing = getCurrentTiming();
+        if (!timing) return;
+
+        const wasRunning = timing.questionRunning === true;
+        const now = Date.now();
+
+        if (
+          timing.questionRunning &&
+          timing.activeQuestionIndex !== null &&
+          Number.isFinite(timing.questionLastStartedAt)
+        ) {
+          const q = timing.activeQuestionIndex;
+          timing.questionElapsedMs[q] += Math.max(0, now - timing.questionLastStartedAt);
+        }
+
+        timing.questionRunning = false;
+        timing.questionLastStartedAt = null;
+        timing.activeQuestionIndex = null;
+
+        if (wasRunning) {
+          timing.activeQuestionIndex = nextIndex;
+          timing.questionRunning = true;
+          timing.questionLastStartedAt = now;
+        }
+        saveData();
+      }
+
+      function initTimersForCurrentAttempt(autoStart = true) {
+        const exam = exams.find((e) => e.id === currentExamId);
+        const attempt = getCurrentAttempt();
+
+        if (!exam || !attempt || currentMode !== "exam") {
+          stopTimerInterval();
+          return;
+        }
+
+        const timing = ensureAttemptTiming(attempt, exam.questionCount);
+
+        if (
+          timing.activeQuestionIndex !== null &&
+          timing.activeQuestionIndex !== currentQuestionIndex
+        ) {
+          timing.questionRunning = false;
+          timing.questionLastStartedAt = null;
+          timing.activeQuestionIndex = null;
+        }
+
+        if (autoStart) {
+          if (!timing.totalRunning) {
+            timing.totalRunning = true;
+            timing.totalLastStartedAt = Date.now();
+          }
+          if (!timing.questionRunning) {
+            timing.activeQuestionIndex = currentQuestionIndex;
+            timing.questionRunning = true;
+            timing.questionLastStartedAt = Date.now();
+          }
+        }
+
+        saveData();
+        startTimerInterval();
+        updateTimerUI();
+      }
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+
+      window.addEventListener("pagehide", () => {
+        if (currentMode !== "exam") return;
+        const timing = getCurrentTiming();
+        if (!timing) return;
+
+        window.__resumeExamTimer = timing.totalRunning === true;
+        window.__resumeQuestionTimer = timing.questionRunning === true;
+
+        if (window.__resumeExamTimer || window.__resumeQuestionTimer) {
+          timerWasHidden = true;
+          pauseTimersForVisibility();
+        }
+      });
+
       /* =====================================================
        START EXAM
     ===================================================== */
@@ -2096,6 +2493,7 @@
             ).fill(false),
 
             completed: false,
+            timing: createTiming(exam.questionCount),
           };
 
           exam.attempts.push(
@@ -2127,6 +2525,7 @@
               ).fill(false),
 
               completed: false,
+              timing: createTiming(exam.questionCount),
             };
 
             exam.attempts.push(
@@ -2166,6 +2565,9 @@
         showExamPage();
 
         renderQuestion();
+
+        // با ورود به یک تلاش جدید یا ادامه تلاش نیمه‌تمام، تایمرهای همان تلاش اجرا می‌شوند.
+        initTimersForCurrentAttempt(true);
       }
 
       /* =====================================================
@@ -2243,6 +2645,12 @@
       }
 
       function returnToHome() {
+        if (currentMode === "exam") {
+          stopAllTimers(true);
+        } else {
+          stopTimerInterval();
+        }
+
         document
           .getElementById("examPage")
           .classList.remove("active");
@@ -2383,8 +2791,24 @@
                 </div>
               `;
 
+        const questionTimerHTML =
+          currentMode === "exam"
+            ? `
+              <div class="question-timer-wrap">
+                <span class="question-timer-title">⏱ زمان این سؤال</span>
+                <span id="questionTimerValue" class="question-timer-value">۰۰:۰۰:۰۰</span>
+                <div class="timer-controls">
+                  <button id="questionTimerStartBtn" class="timer-control" type="button" onclick="startQuestionTimer()">▶ شروع</button>
+                  <button id="questionTimerStopBtn" class="timer-control stop" type="button" onclick="stopQuestionTimer()">■ توقف</button>
+                </div>
+              </div>
+            `
+            : "";
+
         let html = `
           <div class="question-card">
+
+            ${questionTimerHTML}
 
             <div class="question-number">
               سؤال ${currentQuestionIndex + 1}
@@ -2503,6 +2927,7 @@
         document.getElementById(
           "questionArea",
         ).innerHTML = html;
+
       }
 
       /* =====================================================
@@ -2545,7 +2970,9 @@
           exam.questionCount - 1
         ) {
           setTimeout(() => {
-            currentQuestionIndex++;
+            const nextIndex = currentQuestionIndex + 1;
+            prepareQuestionTimerForQuestionChange(nextIndex);
+            currentQuestionIndex = nextIndex;
             renderQuestion();
           }, 120);
         } else {
@@ -2593,8 +3020,9 @@
         )
           return;
 
-        currentQuestionIndex--;
-
+        const nextIndex = currentQuestionIndex - 1;
+        prepareQuestionTimerForQuestionChange(nextIndex);
+        currentQuestionIndex = nextIndex;
         renderQuestion();
       }
 
@@ -2609,8 +3037,9 @@
           currentQuestionIndex <
           exam.questionCount - 1
         ) {
-          currentQuestionIndex++;
-
+          const nextIndex = currentQuestionIndex + 1;
+          prepareQuestionTimerForQuestionChange(nextIndex);
+          currentQuestionIndex = nextIndex;
           renderQuestion();
         }
       }
@@ -2793,6 +3222,60 @@
               percent.toFixed(2),
             ),
         };
+      }
+
+
+      function getAttemptTotalElapsed(attempt) {
+        if (!attempt || !attempt.timing) return 0;
+        let elapsed = Number(attempt.timing.totalElapsedMs) || 0;
+        if (
+          attempt.timing.totalRunning &&
+          Number.isFinite(attempt.timing.totalLastStartedAt)
+        ) {
+          elapsed += Math.max(0, Date.now() - attempt.timing.totalLastStartedAt);
+        }
+        return elapsed;
+      }
+
+      function getAttemptQuestionElapsed(attempt, questionIndex) {
+        if (!attempt || !attempt.timing) return 0;
+
+        let elapsed = 0;
+        if (Array.isArray(attempt.timing.questionElapsedMs)) {
+          elapsed = Number(attempt.timing.questionElapsedMs[questionIndex]) || 0;
+        }
+
+        if (
+          attempt.timing.questionRunning &&
+          attempt.timing.activeQuestionIndex === questionIndex &&
+          Number.isFinite(attempt.timing.questionLastStartedAt)
+        ) {
+          elapsed += Math.max(
+            0,
+            Date.now() - attempt.timing.questionLastStartedAt,
+          );
+        }
+
+        return elapsed;
+      }
+
+      function getAttemptQuestionTotalElapsed(attempt) {
+        if (!attempt || !attempt.timing) return 0;
+        const values = Array.isArray(attempt.timing.questionElapsedMs)
+          ? attempt.timing.questionElapsedMs
+          : [];
+        let total = values.reduce(
+          (sum, value) => sum + (Number(value) || 0),
+          0,
+        );
+        if (
+          attempt.timing.questionRunning &&
+          attempt.timing.activeQuestionIndex !== null &&
+          Number.isFinite(attempt.timing.questionLastStartedAt)
+        ) {
+          total += Math.max(0, Date.now() - attempt.timing.questionLastStartedAt);
+        }
+        return total;
       }
 
       /* =====================================================
@@ -3040,6 +3523,13 @@
                     <div class="answer-row">
 
                       <span class="answer-chip">
+                        ⏱ زمان سؤال:
+                        <strong>
+                          ${toPersianNumber(formatDuration(getAttemptQuestionElapsed(attempt, q.index)))}
+                        </strong>
+                      </span>
+
+                      <span class="answer-chip">
                         پاسخ شما:
                         <strong>
                           ${optionText(
@@ -3192,6 +3682,21 @@
                 </div>
               </div>
 
+            </div>
+
+            <div class="result-timing">
+              <div class="result-time-card">
+                <div class="result-time-value">
+                  ${toPersianNumber(formatDuration(getAttemptTotalElapsed(attempt)))}
+                </div>
+                <div class="result-time-label">زمان کل این تلاش</div>
+              </div>
+              <div class="result-time-card">
+                <div class="result-time-value">
+                  ${toPersianNumber(formatDuration(getAttemptQuestionTotalElapsed(attempt)))}
+                </div>
+                <div class="result-time-label">مجموع زمان پاسخ‌گویی به سؤالات</div>
+              </div>
             </div>
 
             <div

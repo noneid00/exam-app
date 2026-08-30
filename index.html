@@ -551,7 +551,7 @@
 
       .result-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 12px;
         margin-top: 25px;
       }
@@ -583,6 +583,10 @@
 
       .blank {
         color: var(--orange);
+      }
+
+      .doubt {
+        color: #7c3aed;
       }
 
       .back-home {
@@ -664,6 +668,10 @@
 
       .question-status.blank {
         background: #ffedd5;
+      }
+
+      .question-status.doubt {
+        background: #ede9fe;
       }
 
       .answer-row {
@@ -3178,10 +3186,12 @@
       function computeResult(
         exam,
         answers,
+        attempt = null,
       ) {
         let correct = 0;
         let wrong = 0;
         let blank = 0;
+        let doubt = 0;
 
         for (
           let i = 0;
@@ -3192,6 +3202,14 @@
 
           const correctAns =
             exam.correctAnswers[i];
+
+          if (
+            attempt &&
+            Array.isArray(attempt.doubtFlags) &&
+            attempt.doubtFlags[i] === true
+          ) {
+            doubt++;
+          }
 
           if (user === null) {
             blank++;
@@ -3217,6 +3235,7 @@
           correct,
           wrong,
           blank,
+          doubt,
           percent:
             Number(
               percent.toFixed(2),
@@ -3341,6 +3360,7 @@
         const result = computeResult(
           exam,
           attempt.answers,
+          attempt,
         );
 
         let optionsHTML =
@@ -3461,6 +3481,11 @@
                 q.statusClass ===
                 "blank"
               );
+
+            if (
+              filter === "doubt"
+            )
+              return q.isDoubt;
 
             if (
               filter === "correct"
@@ -3682,6 +3707,16 @@
                 </div>
               </div>
 
+              <div class="result-item">
+                <div class="result-number doubt">
+                  ${result.doubt}
+                </div>
+
+                <div class="result-label">
+                  شک‌ها
+                </div>
+              </div>
+
             </div>
 
             <div class="result-timing">
@@ -3761,6 +3796,17 @@
                 onclick="showResult('${exam.id}', 'blank', ${selectedAttemptIndex})"
               >
                 نزده‌ها (${result.blank})
+              </button>
+
+              <button
+                class="filter-btn ${
+                  filter === "doubt"
+                    ? "active"
+                    : ""
+                }"
+                onclick="showResult('${exam.id}', 'doubt', ${selectedAttemptIndex})"
+              >
+                شک‌ها (${result.doubt})
               </button>
 
               <button

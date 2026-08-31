@@ -1225,6 +1225,233 @@
         scroll-behavior: auto !important;
       }
     }
+
+/* =========================================================
+   V2 DASHBOARD + QUESTION BANK
+========================================================= */
+.home-tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:0 auto 24px;
+  padding:6px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:15px;
+  box-shadow:var(--shadow-sm);
+}
+.home-tab{
+  flex:1;
+  min-width:120px;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  padding:11px 14px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+.home-tab.active{
+  background:var(--primary);
+  color:#fff;
+  box-shadow:0 6px 16px color-mix(in srgb,var(--primary) 22%,transparent);
+}
+.home-section{display:none}
+.home-section.active{display:block}
+
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:13px;
+  margin-bottom:18px;
+}
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:18px;
+  box-shadow:var(--shadow-sm);
+  position:relative;
+  overflow:hidden;
+}
+.stat-card::after{
+  content:"";
+  position:absolute;
+  width:80px;height:80px;
+  left:-25px;bottom:-35px;
+  border-radius:50%;
+  background:var(--primary-soft);
+  opacity:.75;
+}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:8px}
+.stat-value{font-size:25px;font-weight:900;color:var(--text-strong)}
+.stat-meta{font-size:10px;color:var(--muted);margin-top:5px}
+.dashboard-two{
+  display:grid;
+  grid-template-columns:1.35fr .85fr;
+  gap:14px;
+  margin-bottom:18px;
+}
+.panel{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:var(--shadow-sm);
+}
+.panel-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:16px;
+}
+.panel-title h3{font-size:15px;color:var(--text-strong)}
+.panel-title span{font-size:10px;color:var(--muted)}
+.chart-bars{
+  display:flex;
+  align-items:flex-end;
+  gap:9px;
+  height:180px;
+  padding:10px 4px 0;
+  border-bottom:1px solid var(--border);
+}
+.chart-bar{
+  flex:1;
+  min-width:10px;
+  border-radius:8px 8px 0 0;
+  background:linear-gradient(to top,var(--primary-dark),var(--primary));
+  position:relative;
+  transition:height .35s ease;
+}
+.chart-bar::after{
+  content:attr(data-value);
+  position:absolute;
+  top:-18px;
+  right:50%;
+  transform:translateX(50%);
+  font-size:9px;
+  color:var(--muted);
+}
+.chart-labels{
+  display:flex;
+  gap:9px;
+  padding-top:8px;
+}
+.chart-labels span{
+  flex:1;text-align:center;font-size:9px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.subject-list{display:grid;gap:9px}
+.subject-row{
+  display:grid;
+  grid-template-columns:80px 1fr 45px;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+}
+.subject-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.subject-track{
+  height:8px;background:var(--bg-soft);border:1px solid var(--border);
+  border-radius:99px;overflow:hidden;
+}
+.subject-fill{height:100%;background:var(--primary);border-radius:inherit}
+.subject-percent{text-align:left;color:var(--muted);direction:ltr}
+
+.dashboard-actions{
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.dashboard-actions .btn{flex:1;min-width:160px}
+
+.bank-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:15px;
+}
+.bank-toolbar h2{font-size:20px;color:var(--text-strong)}
+.bank-toolbar p{font-size:11px;color:var(--muted);margin-top:5px}
+.bank-filters{
+  display:grid;grid-template-columns:1.5fr 1fr 1fr;
+  gap:9px;margin-bottom:14px;
+}
+.bank-filter,.bank-input,.bank-select{
+  width:100%;height:43px;padding:0 12px;border-radius:11px;
+  border:1px solid var(--border);background:var(--input-bg);
+  color:var(--text);outline:none;font:inherit;font-size:12px;
+}
+.bank-filter:focus,.bank-input:focus,.bank-select:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 10%,transparent);
+}
+.bank-list{display:grid;gap:10px}
+.bank-question{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:15px;padding:15px;box-shadow:var(--shadow-sm);
+}
+.bank-question-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:12px;margin-bottom:10px;
+}
+.bank-question-title{font-size:13px;font-weight:800;color:var(--text-strong);line-height:1.8}
+.bank-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.bank-chip{
+  padding:4px 8px;border-radius:999px;background:var(--secondary-bg);
+  color:var(--secondary-text);font-size:9px;
+}
+.bank-options{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;
+}
+.bank-option{
+  padding:8px 10px;border:1px solid var(--border);border-radius:9px;
+  background:var(--card-2);font-size:10px;color:var(--text);
+}
+.bank-option.correct{
+  border-color:var(--green);background:var(--green-soft);color:var(--green);
+}
+.bank-question-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:10px}
+
+.bank-modal-box{width:min(720px,100%)}
+.bank-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bank-form-grid .full{grid-column:1/-1}
+.bank-option-row{
+  display:grid;grid-template-columns:42px 1fr;gap:8px;align-items:center;
+}
+.correct-option{
+  width:42px;height:42px;border-radius:10px;border:1px solid var(--border);
+  background:var(--secondary-bg);color:var(--secondary-text);font-weight:900;
+  cursor:pointer;
+}
+.correct-option.active{background:var(--green);color:#fff;border-color:var(--green)}
+.random-builder{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:9px;
+  margin-top:12px;
+}
+.random-builder .btn{min-height:43px}
+
+.recent-list{display:grid;gap:9px}
+.recent-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid var(--border);border-radius:11px;padding:10px;background:var(--card-2);
+}
+.recent-item-title{font-size:11px;color:var(--text);font-weight:700}
+.recent-item-meta{font-size:9px;color:var(--muted);margin-top:3px}
+.recent-score{font-size:13px;font-weight:900;color:var(--primary);direction:ltr}
+
+@media(max-width:900px){
+  .dashboard-grid{grid-template-columns:repeat(2,1fr)}
+  .dashboard-two{grid-template-columns:1fr}
+  .random-builder{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .dashboard-grid{grid-template-columns:1fr 1fr}
+  .bank-filters,.bank-form-grid{grid-template-columns:1fr}
+  .bank-form-grid .full{grid-column:auto}
+  .bank-options{grid-template-columns:1fr}
+  .random-builder{grid-template-columns:1fr}
+  .home-tab{min-width:90px;font-size:10px}
+  .stat-value{font-size:21px}
+}
+
   </style>
 </head>
 
@@ -1309,6 +1536,51 @@
 
       <div class="container">
 
+
+        <div class="home-tabs">
+          <button class="home-tab active" data-home-tab="dashboard" onclick="switchHomeTab('dashboard')">📊 داشبورد</button>
+          <button class="home-tab" data-home-tab="exams" onclick="switchHomeTab('exams')">📝 آزمون‌ها</button>
+          <button class="home-tab" data-home-tab="bank" onclick="switchHomeTab('bank')">🧠 بانک سؤال</button>
+        </div>
+
+        <section id="dashboardSection" class="home-section active">
+          <div class="dashboard-grid">
+            <div class="stat-card"><div class="stat-label">تعداد آزمون‌ها</div><div id="statExams" class="stat-value">۰</div><div class="stat-meta">آزمون ثبت‌شده</div></div>
+            <div class="stat-card"><div class="stat-label">آزمون‌های کامل</div><div id="statCompleted" class="stat-value">۰</div><div class="stat-meta">تلاش تکمیل‌شده</div></div>
+            <div class="stat-card"><div class="stat-label">میانگین درصد</div><div id="statAverage" class="stat-value">۰٪</div><div class="stat-meta">بر اساس تلاش‌های سنجش‌شده</div></div>
+            <div class="stat-card"><div class="stat-label">بهترین درصد</div><div id="statBest" class="stat-value">۰٪</div><div class="stat-meta">بهترین نتیجه ثبت‌شده</div></div>
+          </div>
+
+          <div class="dashboard-two">
+            <div class="panel">
+              <div class="panel-title"><h3>📈 روند آخرین آزمون‌ها</h3><span>آخرین ۸ تلاش</span></div>
+              <div id="scoreChart" class="chart-bars"></div>
+              <div id="scoreLabels" class="chart-labels"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title"><h3>🎯 عملکرد در موضوعات</h3><span>میانگین</span></div>
+              <div id="subjectStats" class="subject-list"></div>
+            </div>
+          </div>
+
+          <div class="dashboard-two">
+            <div class="panel">
+              <div class="panel-title"><h3>🕘 آخرین فعالیت‌ها</h3><span>جدیدترین تلاش‌ها</span></div>
+              <div id="recentAttempts" class="recent-list"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title"><h3>⚡ شروع سریع</h3><span>بدون دردسر</span></div>
+              <div class="dashboard-actions">
+                <button class="btn btn-primary" onclick="openNewExamModal()">+ آزمون جدید</button>
+                <button class="btn btn-secondary" onclick="openBankModal()">+ افزودن سؤال</button>
+                <button class="btn btn-secondary" onclick="openRandomExamModal()">🎲 آزمون تصادفی</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="examsSection" class="home-section">
+
         <div class="page-title">
 
           <div style="width:100%;">
@@ -1343,6 +1615,23 @@
           id="examsList"
           class="exams"
         ></div>
+        </section>
+
+        <section id="bankSection" class="home-section">
+          <div class="bank-toolbar">
+            <div><h2>🧠 بانک سؤال</h2><p>سؤال‌ها را ذخیره کن و بعداً از آن‌ها آزمون تصادفی بساز.</p></div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <button class="btn btn-secondary" onclick="openRandomExamModal()">🎲 آزمون تصادفی</button>
+              <button class="btn btn-primary" onclick="openBankModal()">+ سؤال جدید</button>
+            </div>
+          </div>
+          <div class="bank-filters">
+            <input id="bankSearch" class="bank-filter" placeholder="جستجو در سؤال‌ها..." oninput="renderQuestionBank()" />
+            <select id="bankSubjectFilter" class="bank-select" onchange="renderQuestionBank()"><option value="">همه موضوعات</option></select>
+            <select id="bankDifficultyFilter" class="bank-select" onchange="renderQuestionBank()"><option value="">همه سطوح</option><option value="آسان">آسان</option><option value="متوسط">متوسط</option><option value="سخت">سخت</option></select>
+          </div>
+          <div id="bankList" class="bank-list"></div>
+        </section>
 
       </div>
 
@@ -1674,6 +1963,33 @@
 
   </div>
 
+
+
+  <div id="bankModal" class="modal">
+    <div class="modal-box bank-modal-box">
+      <div class="modal-header"><h3>افزودن سؤال به بانک</h3><button class="close" onclick="closeBankModal()">×</button></div>
+      <div class="bank-form-grid">
+        <div class="form-group"><label>موضوع</label><input id="bankSubjectInput" class="bank-input" placeholder="مثلاً شبکه"></div>
+        <div class="form-group"><label>سطح</label><select id="bankDifficultyInput" class="bank-select"><option>آسان</option><option selected>متوسط</option><option>سخت</option></select></div>
+        <div class="form-group full"><label>متن سؤال</label><textarea id="bankQuestionInput" class="bank-input" style="height:110px;padding:12px;resize:vertical" placeholder="متن سؤال را وارد کنید..."></textarea></div>
+        <div class="form-group full"><label>گزینه‌ها — روی شماره گزینه صحیح کلیک کن</label></div>
+        <div id="bankOptionsContainer" class="full"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="closeBankModal()">انصراف</button><button class="btn btn-primary" onclick="saveBankQuestion()">ذخیره سؤال</button></div>
+    </div>
+  </div>
+
+  <div id="randomExamModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>🎲 ساخت آزمون تصادفی</h3><button class="close" onclick="closeRandomExamModal()">×</button></div>
+      <div class="form-group"><label>عنوان آزمون</label><input id="randomTitleInput" placeholder="مثلاً آزمون تصادفی شبکه"></div>
+      <div class="form-group"><label>موضوع</label><select id="randomSubjectInput" class="bank-select"><option value="">همه موضوعات</option></select></div>
+      <div class="form-group"><label>سطح</label><select id="randomDifficultyInput" class="bank-select"><option value="">همه سطوح</option><option>آسان</option><option>متوسط</option><option>سخت</option></select></div>
+      <div class="form-group"><label>تعداد سؤال</label><input id="randomCountInput" type="number" min="1" value="10"></div>
+      <div id="randomAvailableText" style="font-size:11px;color:var(--muted);line-height:1.8"></div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="closeRandomExamModal()">انصراف</button><button class="btn btn-primary" onclick="createRandomExam()">ساخت و شروع آزمون</button></div>
+    </div>
+  </div>
 
   <script>
 
@@ -6267,6 +6583,69 @@
     loadSavedTheme();
 
     renderExams();
+
+
+/* ===== V2 MENU + BANK CONTROLLER ===== */
+const QUESTION_BANK_KEY = "my_exam_question_bank_v1";
+let questionBank = JSON.parse(localStorage.getItem(QUESTION_BANK_KEY) || "[]");
+
+function switchHomeTab(tab){
+  document.querySelectorAll('.home-tab').forEach(b => b.classList.toggle('active', b.dataset.homeTab === tab));
+  document.querySelectorAll('.home-section').forEach(s => s.classList.remove('active'));
+  const id = tab === 'dashboard' ? 'dashboardSection' : tab === 'exams' ? 'examsSection' : 'bankSection';
+  const section = document.getElementById(id);
+  if(section) section.classList.add('active');
+  if(tab === 'dashboard') renderDashboardV2();
+  if(tab === 'bank') { refreshBankSubjects(); renderQuestionBankV2(); }
+}
+
+function saveQuestionBankV2(){ localStorage.setItem(QUESTION_BANK_KEY, JSON.stringify(questionBank)); }
+function openBankModal(){
+  const m=document.getElementById('bankModal'); if(!m)return;
+  m.classList.add('active');
+  document.getElementById('bankSubjectInput').value='';
+  document.getElementById('bankQuestionInput').value='';
+  document.getElementById('bankDifficultyInput').value='متوسط';
+  window.bankCorrectIndex=0;
+  document.getElementById('bankOptionsContainer').innerHTML=[0,1,2,3].map(i=>`<div class="bank-option-row" style="margin-bottom:8px"><button type="button" class="correct-option ${i===0?'active':''}" onclick="selectCorrectBankOption(${i})">${i+1}</button><input class="bank-input bank-option-input" placeholder="گزینه ${i+1}"></div>`).join('');
+}
+function closeBankModal(){ document.getElementById('bankModal')?.classList.remove('active'); }
+function selectCorrectBankOption(i){ window.bankCorrectIndex=i; document.querySelectorAll('#bankOptionsContainer .correct-option').forEach((b,n)=>b.classList.toggle('active',n===i)); }
+function saveBankQuestion(){
+  const subject=document.getElementById('bankSubjectInput').value.trim();
+  const text=document.getElementById('bankQuestionInput').value.trim();
+  const difficulty=document.getElementById('bankDifficultyInput').value;
+  const options=[...document.querySelectorAll('.bank-option-input')].map(x=>x.value.trim());
+  if(!subject||!text||options.some(x=>!x)){alert('موضوع، سؤال و هر چهار گزینه را کامل کنید.');return;}
+  questionBank.unshift({id:'q_'+Date.now(),subject,text,difficulty,options,correct:Number(window.bankCorrectIndex||0),createdAt:new Date().toISOString()});
+  saveQuestionBankV2(); closeBankModal(); refreshBankSubjects(); renderQuestionBankV2(); renderDashboardV2(); switchHomeTab('bank');
+}
+function deleteBankQuestionV2(id){ if(!confirm('این سؤال حذف شود؟'))return; questionBank=questionBank.filter(q=>q.id!==id); saveQuestionBankV2(); refreshBankSubjects(); renderQuestionBankV2(); renderDashboardV2(); }
+function refreshBankSubjects(){
+  const subjects=[...new Set(questionBank.map(q=>q.subject).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fa'));
+  ['bankSubjectFilter','randomSubjectInput'].forEach(id=>{const e=document.getElementById(id);if(!e)return;const old=e.value;e.innerHTML='<option value="">همه موضوعات</option>'+subjects.map(x=>`<option value="${escapeHTML(x)}">${escapeHTML(x)}</option>`).join('');if(subjects.includes(old))e.value=old;});
+}
+function renderQuestionBankV2(){
+  const list=document.getElementById('bankList');if(!list)return;
+  const search=(document.getElementById('bankSearch')?.value||'').trim().toLowerCase();
+  const subject=document.getElementById('bankSubjectFilter')?.value||'';
+  const difficulty=document.getElementById('bankDifficultyFilter')?.value||'';
+  const rows=questionBank.filter(q=>(!search||(`${q.text} ${q.subject} ${q.options.join(' ')}`).toLowerCase().includes(search))&&(!subject||q.subject===subject)&&(!difficulty||q.difficulty===difficulty));
+  if(!rows.length){list.innerHTML='<div class="empty"><div class="empty-icon">🧠</div><h3>بانک سؤال خالی است</h3><p style="margin-top:8px">از دکمه «سؤال جدید» برای اضافه کردن سؤال استفاده کن.</p></div>';return;}
+  list.innerHTML=rows.map(q=>`<div class="bank-question"><div class="bank-question-head"><div><div class="bank-question-title">${escapeHTML(q.text)}</div><div class="bank-meta"><span class="bank-chip">${escapeHTML(q.subject)}</span><span class="bank-chip">${escapeHTML(q.difficulty)}</span></div></div><button class="btn btn-danger" style="padding:7px 10px;font-size:10px" onclick="deleteBankQuestionV2('${q.id}')">حذف</button></div><div class="bank-options">${q.options.map((o,i)=>`<div class="bank-option ${i===q.correct?'correct':''}">${i===q.correct?'✓ ':''}${escapeHTML(o)}</div>`).join('')}</div></div>`).join('');
+}
+function renderDashboardV2(){
+  const total=typeof exams!=='undefined'?exams.length:0;
+  const attempts=typeof exams!=='undefined'?exams.reduce((n,e)=>n+(e.attempts||[]).filter(a=>a.completed).length,0):0;
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  set('statExams',total);set('statCompleted',attempts);set('statAverage','—');set('statBest','—');
+  const recent=document.getElementById('recentAttempts'); if(recent) recent.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:25px 5px">با ثبت نتایج، آمار اینجا نمایش داده می‌شود.</div>';
+  const chart=document.getElementById('scoreChart'); if(chart) chart.innerHTML='<div style="width:100%;align-self:center;text-align:center;color:var(--muted);font-size:11px">هنوز نتیجه‌ای برای نمایش وجود ندارد.</div>';
+  const subs=document.getElementById('subjectStats'); if(subs) subs.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:25px 5px">هنوز داده‌ای برای تحلیل موضوعی وجود ندارد.</div>';
+}
+
+refreshBankSubjects();
+renderDashboardV2();
 
   </script>
 

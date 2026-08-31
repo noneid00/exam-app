@@ -363,6 +363,39 @@
         position: relative;
       }
 
+      .exam-search-filter-row {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 17px;
+      }
+
+      .exam-search-filter-row .exam-search-wrap {
+        margin: 0;
+        flex: 1 1 260px;
+      }
+
+      .exam-subject-filter {
+        height: 46px;
+        min-width: 190px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--input-bg);
+        color: var(--text);
+        font: inherit;
+        font-size: 13px;
+        outline: none;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .exam-subject-filter:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px
+          color-mix(in srgb, var(--primary) 13%, transparent);
+      }
+
       .exam-search-wrap::before {
         content: "⌕";
         position: absolute;
@@ -1547,7 +1580,7 @@
       }
       .stat-value {
         font-size: 25px;
-        font-weight: 900;
+        /* font-weight: 900; */
         color: var(--text-strong);
       }
       .stat-meta {
@@ -1555,6 +1588,11 @@
         color: var(--muted);
         margin-top: 5px;
       }
+
+      .dashboard-two-alone {
+        margin-bottom: 20px;
+      }
+
       .dashboard-two {
         display: grid;
         grid-template-columns: 1.35fr 0.85fr;
@@ -1631,11 +1669,13 @@
         gap: 9px;
       }
       .subject-row {
-        display: grid;
-        grid-template-columns: 80px 1fr 45px;
+        display: flex;
+        justify-content: space-between;
+        /* grid-template-columns: 80px 1fr 45px; */
         align-items: center;
         gap: 8px;
         font-size: 11px;
+        white-space: nowrap;
       }
       .subject-name {
         white-space: nowrap;
@@ -1996,16 +2036,16 @@
               </div>
             </div>
 
-            <div class="dashboard-two">
-              <div class="panel">
+            <div class="dashboard-two-alone">
+              <!-- <div class="panel">
                 <div class="panel-title">
                   <h3>📈 روند آخرین آزمون‌ها</h3>
                   <span>آخرین ۸ تلاش</span>
                 </div>
                 <div id="scoreChart" class="chart-bars"></div>
                 <div id="scoreLabels" class="chart-labels"></div>
-              </div>
-              <div class="panel">
+              </div> -->
+              <div class="panel" style="width: 100% !important">
                 <div class="panel-title">
                   <h3>🎯 عملکرد در موضوعات</h3>
                   <span>میانگین</span>
@@ -2054,14 +2094,24 @@
                  SEARCH
             ========================= -->
 
-                <div class="exam-search-wrap">
-                  <input
-                    type="search"
-                    id="examSearch"
-                    class="exam-search"
-                    placeholder="جستجوی آزمون..."
-                    autocomplete="off"
-                  />
+                <div class="exam-search-filter-row">
+                  <div class="exam-search-wrap">
+                    <input
+                      type="search"
+                      id="examSearch"
+                      class="exam-search"
+                      placeholder="جستجوی آزمون..."
+                      autocomplete="off"
+                    />
+                  </div>
+
+                  <select
+                    id="examSubjectFilter"
+                    class="exam-subject-filter"
+                    onchange="searchExams()"
+                  >
+                    <option value="">همه درس‌ها</option>
+                  </select>
                 </div>
 
                 <p>آزمون‌های ثبت‌شده در این دستگاه</p>
@@ -2871,22 +2921,42 @@
        SEARCH
     ===================================================== */
 
+      function refreshExamSubjects() {
+        const select = document.getElementById("examSubjectFilter");
+        if (!select) return;
+
+        const currentValue = select.value;
+        const subjects = [
+          ...new Set(
+            exams.map((exam) => (exam.subject || "").trim()).filter(Boolean),
+          ),
+        ].sort((a, b) => a.localeCompare(b, "fa"));
+
+        select.innerHTML =
+          `<option value="">همه درس‌ها</option>` +
+          subjects
+            .map(
+              (subject) =>
+                `<option value="${escapeHTML(subject)}">${escapeHTML(subject)}</option>`,
+            )
+            .join("");
+
+        if (subjects.includes(currentValue)) {
+          select.value = currentValue;
+        }
+      }
+
       function searchExams() {
         const input = document.getElementById("examSearch");
+        const subjectFilter = document.getElementById("examSubjectFilter");
 
-        if (!input) {
-          renderExams();
-          return;
-        }
-
-        const query = normalizeSearchText(input.value);
-
-        if (!query) {
-          renderExams();
-          return;
-        }
+        const query = input ? normalizeSearchText(input.value) : "";
+        const selectedSubject = subjectFilter ? subjectFilter.value.trim() : "";
 
         const filtered = exams.filter((exam) => {
+          const matchesSubject =
+            !selectedSubject || (exam.subject || "").trim() === selectedSubject;
+
           const searchable = [
             exam.title,
             exam.subject,
@@ -2897,7 +2967,9 @@
             .map(normalizeSearchText)
             .join(" ");
 
-          return searchable.includes(query);
+          const matchesSearch = !query || searchable.includes(query);
+
+          return matchesSubject && matchesSearch;
         });
 
         renderExams(filtered);
@@ -2911,6 +2983,8 @@
         const container = document.getElementById("examsList");
 
         if (!container) return;
+
+        refreshExamSubjects();
 
         if (exams.length === 0) {
           container.innerHTML = `
@@ -4996,6 +5070,12 @@
         examSearch.addEventListener("search", searchExams);
       }
 
+      const examSubjectFilter = document.getElementById("examSubjectFilter");
+
+      if (examSubjectFilter) {
+        examSubjectFilter.addEventListener("change", searchExams);
+      }
+
       /* =====================================================
        INIT
     ===================================================== */
@@ -5237,7 +5317,7 @@
             ? rows
                 .map(
                   (x) =>
-                    `<div class="recent-item"><div class="recent-item-main"><div class="recent-item-title">${escapeHTML(x.exam.title || "آزمون")}</div><div class="recent-item-meta">${escapeHTML(x.exam.subject || "بدون درس")} · ${x.exam.examType === "module" ? "پودمانی" : "درسی"}</div></div><div class="recent-item-score"><strong>${x.result.percent}٪</strong><span>${x.result.correct} صحیح · ${x.result.wrong} غلط · ${x.result.blank} نزده</span></div></div>`,
+                    `<div class="recent-item"><div class="recent-item-main"><div class="recent-item-title">${escapeHTML(x.exam.title || "آزمون")}</div><div class="recent-item-meta">${escapeHTML(x.exam.subject || "بدون درس")} · ${x.exam.examType === "module" ? "پودمانی" : "درسی"}</div></div><div class="recent-item-score"><span>${x.result.percent}٪</span><span>${x.result.correct} صحیح · ${x.result.wrong} غلط · ${x.result.blank} نزده</span></div></div>`,
                 )
                 .join("")
             : "<div style='color:var(--muted);font-size:11px;text-align:center;padding:25px'>هنوز تلاش کاملی ثبت نشده است.</div>";

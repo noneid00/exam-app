@@ -2767,16 +2767,12 @@
       ===================================================== */
 
         function refreshExamSubjectList() {
+          // سازگاری با کدهای قدیمی: اگر datalist وجود داشت،
+          // آن هم فقط از دروس ثبت‌شده تغذیه شود.
           const list = document.getElementById("examSubjectList");
           if (!list) return;
 
-          const subjects = [
-            ...new Set(
-              exams
-                .map((exam) => String(exam.subject || "").trim())
-                .filter(Boolean),
-            ),
-          ].sort((a, b) => a.localeCompare(b, "fa"));
+          const subjects = getSubjectsV3();
 
           list.innerHTML = subjects
             .map((subject) => `<option value="${escapeHTML(subject)}"></option>`)
@@ -2914,7 +2910,11 @@
             return;
           }
           if (!subject) {
-            alert("نام درس را وارد کنید.");
+            alert("یک درس را از بین دروس ثبت‌شده انتخاب کنید.");
+            return;
+          }
+          if (!getSubjectsV3().includes(subject)) {
+            alert("این درس ثبت نشده است. ابتدا از دکمه «+ افزودن درس» آن را ثبت کنید.");
             return;
           }
           if (!date) {
@@ -2977,11 +2977,8 @@
           if (!select) return;
 
           const currentValue = select.value;
-          const subjects = [
-            ...new Set(
-              exams.map((exam) => (exam.subject || "").trim()).filter(Boolean),
-            ),
-          ].sort((a, b) => a.localeCompare(b, "fa"));
+          // منبع فیلتر = فقط دروس ثبت‌شده، نه subject آزمون‌های قبلی.
+          const subjects = getSubjectsV3();
 
           select.innerHTML =
             `<option value="">همه درس‌ها</option>` +
@@ -5132,7 +5129,12 @@
 
         loadSavedTheme();
 
-        renderExams();
+        /*
+         * توجه: renderExams() از getSubjectsV3() استفاده می‌کند.
+         * getSubjectsV3 در اسکریپت افزونه پایین‌تر تعریف شده است، بنابراین
+         * نباید در این نقطه (قبل از تعریف آن) اجرا شود. اجرای اولیه به
+         * DOMContentLoaded پایین فایل منتقل شده است.
+         */
 
         /* ===== V2 MENU + BANK CONTROLLER ===== */
         const QUESTION_BANK_KEY = "my_exam_question_bank_v1";
@@ -5229,9 +5231,8 @@
           renderDashboardV2();
         }
         function refreshBankSubjects() {
-          const subjects = [
-            ...new Set(questionBank.map((q) => q.subject).filter(Boolean)),
-          ].sort((a, b) => a.localeCompare(b, "fa"));
+          // فیلتر موضوع بانک سؤال نیز فقط دروس ثبت‌شده را نمایش می‌دهد.
+          const subjects = getSubjectsV3();
           ["bankSubjectFilter", "randomSubjectInput"].forEach((id) => {
             const e = document.getElementById(id);
             if (!e) return;
@@ -5399,17 +5400,32 @@
           }
         }
 
-        refreshBankSubjects();
-        renderDashboardV2();
+        /* اجرای اولیه بعد از آماده شدن منبع دروس ثبت‌شده انجام می‌شود. */
+        if (typeof getSubjectsV3 === "function") {
+          refreshBankSubjects();
+          renderDashboardV2();
+        }
       </script>
     
 <script>
 /* ===== افزونه قابلیت‌های درخواستی ===== */
 const SUBJECTS_KEY_V3 = "my_exam_subjects_v3";
 function getSubjectsV3(){
-  const saved = JSON.parse(localStorage.getItem(SUBJECTS_KEY_V3) || "[]");
-  const fromExams = exams.map(e => String(e.subject || "").trim()).filter(Boolean);
-  return [...new Set([...saved, ...fromExams])].sort((a,b)=>a.localeCompare(b,"fa"));
+  // فقط درس‌هایی که کاربر صراحتاً از طریق «+ افزودن درس» ثبت کرده است.
+  // درس‌های موجود در آزمون‌های قدیمی نباید خودکار به لیست دروس ثبت‌شده اضافه شوند.
+  let saved = [];
+  try {
+    const raw = JSON.parse(localStorage.getItem(SUBJECTS_KEY_V3) || "[]");
+    saved = Array.isArray(raw) ? raw : [];
+  } catch {
+    saved = [];
+  }
+
+  return [...new Set(
+    saved
+      .map(s => String(s || "").trim())
+      .filter(Boolean)
+  )].sort((a,b)=>a.localeCompare(b,"fa"));
 }
 function saveSubjectsV3(subjects){ localStorage.setItem(SUBJECTS_KEY_V3, JSON.stringify([...new Set(subjects.map(s=>String(s).trim()).filter(Boolean))])); }
 function refreshExamSubjectsV3(selected=""){
@@ -5429,9 +5445,22 @@ function saveNewSubject(){
   const input=document.getElementById("newSubjectInput");
   const subject=input.value.trim();
   if(!subject){ alert("نام درس را وارد کنید."); return; }
+
   const subjects=getSubjectsV3();
-  if(!subjects.includes(subject)) saveSubjectsV3([...subjects,subject]);
+  if(subjects.includes(subject)){
+    alert("این درس قبلاً ثبت شده است.");
+    return;
+  }
+
+  saveSubjectsV3([...subjects, subject]);
+
+  // همه لیست‌ها و فیلترها بلافاصله از منبع واحد دروس ثبت‌شده به‌روزرسانی شوند.
   refreshExamSubjectsV3(subject);
+  refreshEditExamSubjects(subject);
+  refreshExamSubjects();
+  refreshExamSubjectList();
+  refreshBankSubjects();
+
   closeSubjectModal();
 }
 
@@ -5486,6 +5515,9 @@ function saveEditedExamName(){
   const count=Number(document.getElementById("editExamQuestionCountInput").value);
   if(!title||!subject||!date||!Number.isInteger(count)||count<1){
     alert("تمام اطلاعات ضروری را صحیح وارد کنید."); return;
+  }
+  if(!getSubjectsV3().includes(subject)){
+    alert("این درس ثبت نشده است. ابتدا آن را از بخش «افزودن درس» ثبت کنید."); return;
   }
   if(type==="module"&&!moduleName){alert("نام پودمان را وارد کنید.");return;}
   const oldCount=exam.questionCount;
@@ -5555,8 +5587,14 @@ function saveCorrectAnswerFromResult(){
 
 /* تغییر عنوان دکمه و تکمیل انتخاب درس هنگام ایجاد آزمون */
 document.addEventListener("DOMContentLoaded",()=>{
+  /* همه توابع مربوط به دروس اکنون تعریف شده‌اند؛ حالا اولین رندر امن است. */
   refreshExamSubjectsV3();
   refreshEditExamSubjects();
+  refreshExamSubjects();
+  refreshExamSubjectList();
+  refreshBankSubjects();
+  renderExams();
+  renderDashboardV2();
   document.querySelectorAll('button[onclick^="openEditExamNameModal"]').forEach(b=>b.textContent="⚙️ تنظیمات آزمون");
 });
 </script>

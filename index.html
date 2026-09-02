@@ -4460,6 +4460,57 @@
           return total;
         }
 
+        /*
+         * آمار شک برای همان تلاش انتخاب‌شده:
+         * doubtCount: تعداد کل سؤال‌هایی که علامت شک داشته‌اند
+         * wrongDoubtCount: تعداد سؤال‌های غلطی که علامت شک داشته‌اند
+         * wrongDoubtPercent: نسبت غلط‌های همراه با شک به کل غلط‌ها
+         */
+        function getAttemptDoubtStats(exam, attempt) {
+          const questionCount = Number(exam?.questionCount) || 0;
+          const answers = Array.isArray(attempt?.answers) ? attempt.answers : [];
+          const doubts = Array.isArray(attempt?.doubtFlags)
+            ? attempt.doubtFlags
+            : [];
+
+          let doubtCount = 0;
+          let wrongDoubtCount = 0;
+          let wrongCount = 0;
+
+          for (let i = 0; i < questionCount; i++) {
+            const userAnswer =
+              answers[i] === undefined ? null : answers[i];
+            const correctAnswer =
+              Array.isArray(exam.correctAnswers) &&
+              exam.correctAnswers[i] !== undefined
+                ? exam.correctAnswers[i]
+                : null;
+
+            const isWrong =
+              userAnswer !== null &&
+              !(correctAnswer !== null && userAnswer === correctAnswer);
+
+            const isDoubt = doubts[i] === true;
+
+            if (isDoubt) doubtCount++;
+
+            if (isWrong) {
+              wrongCount++;
+              if (isDoubt) wrongDoubtCount++;
+            }
+          }
+
+          const wrongDoubtPercent =
+            wrongCount > 0 ? (wrongDoubtCount / wrongCount) * 100 : 0;
+
+          return {
+            doubtCount,
+            wrongDoubtCount,
+            wrongCount,
+            wrongDoubtPercent: Number(wrongDoubtPercent.toFixed(2)),
+          };
+        }
+
         /* =====================================================
         SHOW RESULT
       ===================================================== */
@@ -4496,6 +4547,7 @@
           const attempt = completeAttempts[selectedAttemptIndex];
 
           const result = computeResult(exam, attempt.answers);
+          const doubtStats = getAttemptDoubtStats(exam, attempt);
 
           const optionsHTML = completeAttempts
             .map((a, idx) => {
@@ -4578,6 +4630,8 @@
             if (filter === "blank") return q.statusClass === "blank";
 
             if (filter === "correct") return q.statusClass === "correct";
+
+            if (filter === "doubt") return q.isDoubt === true;
 
             return true;
           });
@@ -4795,20 +4849,27 @@
                   زمان کل این تلاش
                 </div>
 
-              </div>
-
-              <div class="result-time-card">
-
+              </div>            <div class="result-time-card">
                 <div class="result-time-value">
-                  ${toPersianNumber(
-                    formatDuration(getAttemptQuestionTotalElapsed(attempt)),
-                  )}
+                  ${toPersianNumber(doubtStats.wrongDoubtPercent)}٪
                 </div>
 
                 <div class="result-time-label">
-                  مجموع زمان پاسخ‌گویی به سؤالات
+                  میانگین شک در پاسخ‌های غلط
                 </div>
 
+                <div
+                  style="
+                    margin-top:5px;
+                    color:var(--muted);
+                    font-size:10px;
+                  "
+                >
+                  ${toPersianNumber(doubtStats.wrongDoubtCount)}
+                  از
+                  ${toPersianNumber(doubtStats.wrongCount)}
+                  غلط
+                </div>
               </div>
 
             </div>
@@ -4866,6 +4927,13 @@
                 onclick="showResult('${exam.id}', 'correct', ${selectedAttemptIndex})"
               >
                 صحیح‌ها (${result.correct})
+              </button>
+
+              <button
+                class="filter-btn ${filter === "doubt" ? "active" : ""}"
+                onclick="showResult('${exam.id}', 'doubt', ${selectedAttemptIndex})"
+              >
+                شک‌ها (${doubtStats.doubtCount})
               </button>
 
             </div>

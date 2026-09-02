@@ -2093,6 +2093,27 @@
                   <div id="scoreChart" class="chart-bars"></div>
                   <div id="scoreLabels" class="chart-labels"></div>
                 </div> -->
+                <div class="panel" style="margin-bottom: 20px;">
+                  <div class="panel-title">
+                    <h3>⚡ شروع سریع</h3>
+                    <span>بدون دردسر</span>
+                  </div>
+                  <div class="dashboard-actions">
+                    <button class="btn btn-primary" onclick="openNewExamModal()">
+                      + آزمون جدید
+                    </button>
+                    <button class="btn btn-primary" onclick="openSubjectModal()">+ درس جدید     </button>
+                    <button class="btn btn-secondary" onclick="openBankModal()">
+                      + افزودن سؤال
+                    </button>
+                    <button
+                      class="btn btn-secondary"
+                      onclick="openRandomExamModal()"
+                    >
+                      🎲 آزمون تصادفی
+                    </button>
+                  </div>
+                </div>
                 <div class="panel" style="width: 100% !important">
                   <div class="panel-title">
                     <h3>🎯 عملکرد در موضوعات</h3>
@@ -2110,26 +2131,7 @@
                   </div>
                   <div id="recentAttempts" class="recent-list"></div>
                 </div>
-                <div class="panel">
-                  <div class="panel-title">
-                    <h3>⚡ شروع سریع</h3>
-                    <span>بدون دردسر</span>
-                  </div>
-                  <div class="dashboard-actions">
-                    <button class="btn btn-primary" onclick="openNewExamModal()">
-                      + آزمون جدید
-                    </button>
-                    <button class="btn btn-secondary" onclick="openBankModal()">
-                      + افزودن سؤال
-                    </button>
-                    <button
-                      class="btn btn-secondary"
-                      onclick="openRandomExamModal()"
-                    >
-                      🎲 آزمون تصادفی
-                    </button>
-                  </div>
-                </div>
+                
               </div>
             </section>
 
@@ -3234,7 +3236,7 @@
                   class="btn btn-edit"
                   onclick="openEditExamNameModal('${exam.id}')"
                 >
-                  ✏️ ویرایش نام
+                  ⚙️ تنظیمات آزمون
                 </button>
 
               `;
